@@ -423,6 +423,73 @@ function clearSelection(){selectedIds.forEach(id=>{const el=document.querySelect
 let moveId=null,moveEl=null,moveSX=0,moveSY=0,moveOrigX=0,moveOrigY=0;
 let hoveredId=null,darkMode=true;
 let pm2Meta=null;
+let forecastData=null;
+
+// ── FORECAST ──────────────────────────────────────────────────────
+const FORECAST_URL='https://raw.githubusercontent.com/Vapoapp/planoteste/main/data/forecast.json';
+(async function loadForecast(){
+  try{
+    const r=await fetch(FORECAST_URL);
+    if(r.ok) forecastData=await r.json();
+  }catch(e){ console.warn('Previsão indisponível:',e.message); }
+})();
+
+function normalizeCampoKey(s){
+  return s.toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^A-Z0-9 ]/g,'').trim();
+}
+
+function windArrow(deg){
+  if(deg==null) return '';
+  // seta apontando para onde o vento sopra (180° da origem)
+  const d=((deg+180)%360);
+  return `<span style="display:inline-block;transform:rotate(${d}deg);font-size:14px">↑</span>`;
+}
+
+function buildForecastHTML(campo){
+  if(!forecastData) return '<div style="color:var(--muted);font-size:11px;margin-top:10px">⏳ Carregando previsão...</div>';
+  const key=normalizeCampoKey(campo);
+  const f=forecastData.campos?.[key];
+  if(!f||!f.dias?.length) return '<div style="color:var(--muted);font-size:11px;margin-top:10px">— Previsão não disponível para '+campo+'</div>';
+
+  const isMs=(forecastData.unidade==='ms');
+  // converte m/s → nós se necessário
+  function fmt(v){ if(v==null) return '—'; return isMs?(v*1.944).toFixed(1)+' kt':v.toFixed(1)+' kt'; }
+
+  const dias=f.dias.slice(0,5);
+  const hoje=new Date().toISOString().slice(0,10);
+
+  const rows=dias.map(d=>{
+    const label=d.data===hoje?'Hoje':new Date(d.data+'T12:00:00Z').toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'2-digit'});
+    const arrow=windArrow(d.direcaoGraus);
+    const rajada=d.rajadaMax!=null?`<span style="color:#ff9a3c;font-size:10px">${fmt(d.rajadaMax)}</span>`:'<span style="color:var(--muted);font-size:10px">—</span>';
+    return `<tr style="border-top:1px solid var(--border)">
+      <td style="padding:3px 6px;font-size:11px;color:var(--text2);white-space:nowrap">${label}</td>
+      <td style="padding:3px 6px;text-align:center;font-size:12px">${arrow} <b style="font-size:11px;font-family:monospace">${d.direcaoPredominante}</b></td>
+      <td style="padding:3px 6px;text-align:center;font-size:11px;font-family:monospace">${fmt(d.velocidadeMin)} – ${fmt(d.velocidadeMax)}</td>
+      <td style="padding:3px 6px;text-align:center">${rajada}</td>
+    </tr>`;
+  }).join('');
+
+  const upd=forecastData.updatedAt?new Date(forecastData.updatedAt).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—';
+  return `
+    <div style="margin-top:10px;border:1px solid var(--border);border-radius:4px;overflow:hidden">
+      <div style="background:var(--surface2);padding:4px 8px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted)">🌬 VENTO — ${f.nome||campo}</span>
+        <span style="font-size:9px;color:var(--muted)">atualizado ${upd}</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:var(--surface3)">
+          <th style="padding:3px 6px;font-size:9px;color:var(--muted);text-align:left">DIA</th>
+          <th style="padding:3px 6px;font-size:9px;color:var(--muted)">DIREÇÃO PRED.</th>
+          <th style="padding:3px 6px;font-size:9px;color:var(--muted)">VEL. (mín–máx)</th>
+          <th style="padding:3px 6px;font-size:9px;color:var(--muted)">RAJADA MÁX</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
 
 // ── THEME ─────────────────────────────────────────────────────────
 function toggleTheme(){
@@ -2820,6 +2887,11 @@ function showUMPanel(key){
     </table>
     <div style="margin-top:6px;font-size:10px;color:var(--muted);font-style:italic">${um.obs}</div>
     ${alertSection}`;
+
+  // Append forecast section
+  if(um.campo){
+    el.innerHTML += buildForecastHTML(um.campo);
+  }
 
   el.style.display='block';
 }
