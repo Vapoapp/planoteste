@@ -1,0 +1,4594 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9ZWN759NS6"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9ZWN759NS6');
+</script>
+<title>Plano de Carga</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;700&display=swap');
+
+[data-theme="dark"]{
+  --bg:#0a0e14;--surface:#111820;--surface2:#161e2a;--surface3:#1c2535;
+  --border:#1e2d40;--border2:#2a3a50;
+  --text:#dce8f5;--text2:#8aa4be;--muted:#4a6280;--accent:#2e8fff;
+  --deck-bg:linear-gradient(180deg,#0d1520 0%,#0a1018 100%);
+  --deck-border:#2a3a50;--shadow:rgba(0,0,0,.7);--tt-bg:#1a2535;
+  --modal-bg:rgba(0,0,0,.78);--input-bg:#0d1520;
+}
+[data-theme="light"]{
+  --bg:#eef3f8;--surface:#fff;--surface2:#e4ecf4;--surface3:#d8e4f0;
+  --border:#c0d0e0;--border2:#a8bcd0;
+  --text:#182030;--text2:#3a5070;--muted:#7090b0;--accent:#1860c8;
+  --deck-bg:linear-gradient(180deg,#dce8f4 0%,#cfd8e8 100%);
+  --deck-border:#a0b8d0;--shadow:rgba(0,0,0,.18);--tt-bg:#fff;
+  --modal-bg:rgba(60,90,130,.5);--input-bg:#f4f8fc;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
+  height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none;transition:background .2s,color .2s;}
+
+/* HEADER */
+header{background:var(--surface);border-bottom:1px solid var(--border);
+  padding:7px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;transition:background .2s;}
+.logo{font-size:18px;}
+.h-title h1{font-size:14px;font-weight:900;letter-spacing:3px;text-transform:uppercase;}
+.h-title p{font-size:8px;color:var(--muted);font-family:'Roboto Mono',monospace;letter-spacing:1px;}
+.route-pill{background:var(--surface2);border:1px solid var(--border);padding:3px 10px;
+  border-radius:20px;font-size:10px;font-family:'Roboto Mono',monospace;color:var(--muted);}
+.route-pill b{color:var(--text);}
+#legend{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap;align-items:center;}
+.leg{display:flex;align-items:center;gap:4px;padding:2px 8px;border-radius:4px;
+  font-size:11px;font-weight:700;letter-spacing:1px;border:1px solid transparent;cursor:pointer;transition:.15s;}
+.leg.off{opacity:.25;filter:grayscale(1);}
+.ld{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.hstats{display:flex;gap:10px;}
+.hs .hl{font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.hs .hv{font-size:12px;font-weight:700;font-family:'Roboto Mono',monospace;}
+#hsPesoM2{cursor:default;}
+#hsPesoM2.pm2-active{cursor:pointer;}
+.dc.focused-cargo{animation:cargoPulse 1.2s ease-in-out 4;z-index:120!important;}
+@keyframes cargoPulse{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,214,10,.0);}25%{transform:scale(1.05);box-shadow:0 0 0 3px rgba(255,255,255,.75),0 0 0 8px rgba(255,214,10,.55),0 0 28px rgba(255,214,10,.95);}50%{transform:scale(1.08);filter:brightness(1.35);}75%{transform:scale(1.03);box-shadow:0 0 0 2px rgba(255,255,255,.65),0 0 0 10px rgba(255,214,10,.35),0 0 20px rgba(255,214,10,.7);}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,214,10,.0);}}
+.btn{padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;
+  font-family:'Inter',sans-serif;letter-spacing:1px;cursor:pointer;transition:.15s;border:1px solid;}
+.btn-draw{border-color:#7a4fc8;background:rgba(122,79,200,.08);color:#b07af5;}
+.btn-draw:hover{background:rgba(122,79,200,.2);}
+.btn-draw.active{background:rgba(122,79,200,.3);border-color:#b07af5;color:#d4b0ff;box-shadow:0 0 8px rgba(180,120,255,.4);}
+#drawRect{position:absolute;border:2px dashed #b07af5;pointer-events:none;z-index:200;display:none;border-radius:3px;box-sizing:border-box;}
+#drawRect *{pointer-events:auto;}
+.zo-bar{position:absolute;top:0;left:0;right:0;height:22px;display:flex;align-items:center;gap:5px;padding:0 6px;background:rgba(0,0,0,.55);border-radius:1px;cursor:move;user-select:none;}
+.zo-dim{font-family:'Roboto Mono',monospace;font-size:9px;color:rgba(200,220,255,.7);flex-shrink:0;}
+.zo-dests{display:flex;gap:4px;flex:1;overflow:hidden;flex-wrap:nowrap;}
+.zo-dest{font-family:'Inter',sans-serif;font-size:10px;font-weight:700;padding:1px 7px;border-radius:3px;border:1px solid rgba(255,255,255,.15);cursor:pointer;white-space:nowrap;background:rgba(0,0,0,.3);letter-spacing:.5px;}
+.zo-dest:hover{filter:brightness(1.3);}
+.zo-close{margin-left:4px;font-size:12px;color:rgba(255,100,100,.8);cursor:pointer;padding:0 3px;flex-shrink:0;}
+.zo-close:hover{color:#ff5555;}
+.zo-lock{font-size:10px;font-weight:900;letter-spacing:.5px;color:#0d1520;background:#27c93f;cursor:pointer;padding:1px 7px;border-radius:3px;border:1px solid #1fa030;flex-shrink:0;transition:.15s;}
+.zo-lock:hover{background:#30e04a;box-shadow:0 0 6px rgba(39,201,63,.5);}
+/* Resize handles */
+.zo-handle{position:absolute;width:10px;height:10px;background:#b07af5;border:2px solid #fff;border-radius:2px;z-index:10;}
+.zo-nw{top:-5px;left:-5px;cursor:nw-resize;}
+.zo-ne{top:-5px;right:-5px;cursor:ne-resize;}
+.zo-sw{bottom:-5px;left:-5px;cursor:sw-resize;}
+.zo-se{bottom:-5px;right:-5px;cursor:se-resize;}
+.zo-n{top:-5px;left:calc(50% - 5px);cursor:n-resize;}
+.zo-s{bottom:-5px;left:calc(50% - 5px);cursor:s-resize;}
+.zo-w{left:-5px;top:calc(50% - 5px);cursor:w-resize;}
+.zo-e{right:-5px;top:calc(50% - 5px);cursor:e-resize;}
+.btn-clear{border-color:#b03030;background:rgba(180,50,50,.08);color:#e05050;}
+.btn-clear:hover{background:rgba(180,50,50,.2);}
+
+.btn-up{border-color:var(--border2);background:rgba(46,143,255,.08);color:var(--accent);}
+.btn-up:hover{background:rgba(46,143,255,.2);}
+.btn-cfg{border-color:var(--border2);background:var(--surface2);color:var(--text2);}
+.btn-cfg:hover{background:var(--surface3);}
+.btn-pdf{border-color:#2a6b3a;background:rgba(39,180,80,.08);color:#30c060;}
+.btn-pdf:hover{background:rgba(39,180,80,.2);}
+.theme-toggle{display:flex;align-items:center;gap:5px;cursor:pointer;padding:3px 9px;
+  border-radius:20px;border:1px solid var(--border);background:var(--surface2);
+  font-size:11px;color:var(--text2);transition:.15s;}
+.theme-toggle:hover{border-color:var(--border2);}
+
+/* WORKSPACE */
+.workspace{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:248px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;}
+.sbh{padding:7px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.sbh h2{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.badge{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1px 7px;font-size:10px;font-family:'Roboto Mono',monospace;}
+#fbar{padding:5px 8px;border-bottom:1px solid var(--border);display:flex;gap:3px;flex-wrap:wrap;}
+.fb{padding:2px 8px;border-radius:10px;border:1px solid var(--border);background:transparent;
+  color:var(--muted);font-size:10px;font-family:'Inter',sans-serif;font-weight:600;letter-spacing:1px;cursor:pointer;transition:.15s;}
+.fb.active,.fb:hover{border-color:var(--accent);color:var(--accent);background:rgba(46,143,255,.1);}
+.clist{flex:1;overflow-y:auto;padding:4px;display:flex;flex-direction:column;gap:3px;}
+.clist::-webkit-scrollbar{width:3px;}
+.clist::-webkit-scrollbar-thumb{background:var(--border);}
+.card{border-radius:5px;padding:5px 8px;cursor:grab;border:1px solid transparent;position:relative;transition:transform .1s,filter .1s;}
+.card:hover{transform:translateX(3px);filter:brightness(1.1);}
+.card.placed{opacity:.28;pointer-events:none;}
+.card.placed::after{content:'✓ EMBARCADO';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;letter-spacing:2px;color:rgba(255,255,255,.9);background:rgba(0,0,0,.42);border-radius:4px;}
+[data-theme="light"] .card.placed::after{color:rgba(0,0,0,.6);background:rgba(255,255,255,.5);}
+.ct{display:flex;justify-content:space-between;align-items:flex-start;gap:4px;margin-bottom:2px;}
+.dtag{font-size:8px;font-weight:900;letter-spacing:1px;padding:1px 6px;border-radius:2px;white-space:nowrap;flex-shrink:0;}
+.cdesc{font-size:10px;font-weight:600;line-height:1.2;color:var(--text);}
+.cmeta{display:flex;gap:6px;}
+.cmeta span{font-size:9px;font-family:'Roboto Mono',monospace;}
+.cwt{color:#c8880a!important;}[data-theme="light"] .cwt{color:#9a6008!important;}
+.cdm{color:var(--accent)!important;}
+.empty-state{padding:20px 10px;text-align:center;}
+.empty-state .ei{font-size:28px;margin-bottom:8px;opacity:.3;}
+.empty-state p{font-size:11px;color:var(--muted);line-height:1.5;}
+
+/* DECK */
+.dpanel{flex:1;display:flex;flex-direction:column;overflow:clip;padding:6px 10px;gap:6px;}
+.dtbar{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.dtbar h2{font-size:9px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
+.dwrap{flex:1;position:relative;overflow:visible;padding:12px 24px 10px;}
+.deck{position:absolute;background:var(--deck-bg);border:2px solid var(--deck-border);border-radius:4px;overflow:visible;}
+#gridCanvas{position:absolute;top:0;left:0;pointer-events:none;z-index:1;}
+.dc{position:absolute;border-radius:3px;overflow:hidden;border:1.5px solid transparent;cursor:move;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2px;}
+.dc:hover{z-index:50;box-shadow:0 0 0 2px rgba(255,255,255,.18);}
+.dc.selected{box-shadow:0 0 0 2px #fff,0 0 0 4px #2e8fff!important;z-index:60;}
+[data-theme="light"] .dc:hover{box-shadow:0 0 0 2px rgba(0,0,0,.15);}
+.dc.moving{opacity:.65;z-index:100;box-shadow:0 6px 20px var(--shadow);}
+.dcl{font-size:8px;font-weight:800;display:block;letter-spacing:.2px;pointer-events:none;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.dcd{font-size:7px;opacity:.85;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;pointer-events:none;}
+.dcw{font-size:7px;opacity:.65;display:block;font-family:'Roboto Mono',monospace;pointer-events:none;}
+.dc-rot{position:absolute;bottom:2px;left:2px;font-size:10px;line-height:1;color:#fff;cursor:pointer;padding:2px 4px;background:rgba(0,0,0,.65);border-radius:2px;z-index:20;transition:.15s;border:1px solid rgba(255,255,255,.2);}
+.dc-rot:hover{background:rgba(46,143,255,.85);border-color:rgba(46,143,255,.9);}
+.dc-del{position:absolute;top:2px;right:2px;font-size:10px;line-height:1;color:#fff;cursor:pointer;font-weight:900;padding:2px 4px;background:rgba(0,0,0,.65);border-radius:2px;z-index:20;transition:.15s;border:1px solid rgba(255,255,255,.2);}
+.dc-del:hover{background:rgba(200,50,50,.9);border-color:rgba(220,60,60,.9);}
+
+/* DECK EXTERNAL LABELS */
+.deck-label{position:absolute;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;white-space:nowrap;z-index:20;}
+.deck-label.top{flex-direction:row;gap:7px;height:22px;transform:translateY(-100%);}
+.deck-label.bottom{flex-direction:row;gap:7px;height:22px;transform:translateY(0);}
+.deck-label.top .dl-main,.deck-label.bottom .dl-main{
+  font-family:'Inter',sans-serif;font-weight:900;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--text);}
+.deck-label.top .dl-sub,.deck-label.bottom .dl-sub{
+  font-family:'Inter',sans-serif;font-weight:400;font-size:11px;letter-spacing:1px;font-style:italic;color:var(--muted);}
+.deck-label.left{flex-direction:column;gap:4px;width:22px;transform:translateX(-100%);}
+.deck-label.right{flex-direction:column;gap:4px;width:22px;transform:translateX(0);}
+.deck-label.left .dl-main,.deck-label.right .dl-main{
+  writing-mode:vertical-rl;text-orientation:mixed;font-family:'Inter',sans-serif;
+  font-weight:900;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:#e04040;}
+.deck-label.left .dl-main{transform:rotate(180deg);}
+
+
+#dragGhost{position:fixed;pointer-events:none;z-index:9999;border-radius:3px;border:2px dashed;opacity:.8;display:none;flex-direction:column;align-items:center;justify-content:center;font-size:10px;font-weight:700;text-align:center;padding:4px;gap:1px;}
+#dragGhost .gh-sub{font-size:8px;opacity:.7;font-family:'Roboto Mono',monospace;}
+#dragGhost .gh-hint{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--muted);white-space:nowrap;font-family:'Roboto Mono',monospace;}
+
+/* INFO BAR */
+#ibar{flex-shrink:0;background:var(--surface);border-top:1px solid var(--border);padding:6px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.ibcard{display:flex;flex-direction:column;gap:3px;padding:6px 10px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);min-width:160px;cursor:default;transition:border-color .15s;}
+.ibcard:hover{border-color:var(--border2);}
+.ibcard-top{display:flex;align-items:center;gap:7px;}
+.ibcard-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.ibcard-label{font-family:'Inter',sans-serif;font-weight:900;font-size:14px;letter-spacing:1.5px;}
+.ibcard-stats{font-family:'Roboto Mono',monospace;font-size:10px;color:var(--muted);margin-left:auto;white-space:nowrap;}
+.ibcard-row2{display:flex;align-items:center;gap:6px;}
+.ibcard-bar-track{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.ibcard-bar-fill{height:100%;border-radius:2px;opacity:.85;}
+.ibcard-placed{font-family:'Roboto Mono',monospace;font-size:9px;color:var(--muted);white-space:nowrap;}
+.ibcard-specs{font-size:9px;font-family:'Inter',sans-serif;font-weight:700;letter-spacing:.5px;padding:1px 6px;border-radius:3px;cursor:pointer;white-space:nowrap;border-style:solid;border-width:1px;}
+.ibcard-alert{font-size:9px;font-weight:900;color:#ff5f5f;white-space:nowrap;}
+.ibseg{display:flex;align-items:center;gap:5px;}
+.ibdot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+.ibv{font-family:'Roboto Mono',monospace;font-weight:700;}
+.sep{color:var(--border2);}
+.hint-key{margin-left:auto;font-size:10px;color:var(--muted);display:flex;align-items:center;gap:5px;font-family:'Roboto Mono',monospace;}
+.kbadge{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:1px 5px;color:var(--text2);}
+
+/* TOOLTIP */
+.tooltip{position:fixed;z-index:9999;background:var(--tt-bg);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:11px;line-height:1.6;pointer-events:none;max-width:230px;box-shadow:0 8px 24px var(--shadow);display:none;}
+.tooltip.show{display:block;}
+.tt-dest{font-weight:900;letter-spacing:1px;font-size:10px;margin-bottom:2px;}
+.tt-desc{color:var(--text);font-weight:600;margin-bottom:2px;}
+.tt-row{color:var(--muted);font-size:10px;font-family:'Roboto Mono',monospace;}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:var(--modal-bg);z-index:500;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-bg.hidden{display:none;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:22px 26px;max-width:460px;width:90%;text-align:center;box-shadow:0 16px 48px var(--shadow);}
+.modal h2{font-size:15px;font-weight:900;letter-spacing:2px;margin-bottom:6px;}
+.modal>p{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5;}
+.modal-drop{border:2px dashed var(--border);border-radius:6px;padding:22px;cursor:pointer;transition:.2s;margin-bottom:12px;}
+.modal-drop:hover,.modal-drop.over{border-color:var(--accent);background:rgba(46,143,255,.06);}
+.modal-drop .mdi{font-size:30px;margin-bottom:6px;}
+.modal-drop p{font-size:12px;color:var(--muted);margin:0;}
+.modal-drop p b{color:var(--accent);}
+.modal-status{font-size:11px;min-height:18px;margin-bottom:10px;font-family:'Roboto Mono',monospace;}
+.modal-status.ok{color:#27c93f;}.modal-status.err{color:#e05050;}.modal-status.loading{color:var(--accent);}
+.modal-close{font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;}
+.modal-close:hover{color:var(--text);}
+/* Config modal */
+.cfg-section{text-align:left;margin-bottom:14px;}
+.cfg-section h3{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+.cfg-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end;}
+.cfg-field{display:flex;flex-direction:column;min-width:0;}
+.cfg-field label{display:flex;align-items:flex-end;min-height:24px;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:4px;line-height:1.2;}
+.cfg-field input{width:100%;height:40px;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;padding:6px 10px;font-size:13px;font-family:'Roboto Mono',monospace;color:var(--text);outline:none;transition:.15s;}
+.cfg-field input:focus{border-color:var(--accent);}
+.cfg-radio-group{display:flex;gap:8px;}
+.cfg-radio{flex:1;display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:.15s;background:var(--input-bg);}
+.cfg-radio:hover{border-color:var(--border2);}
+.cfg-radio.selected{border-color:var(--accent);background:rgba(46,143,255,.08);}
+.cfg-radio input{display:none;}
+.cfg-radio .cr-icon{font-size:16px;}
+.cfg-radio .cr-text{text-align:left;}
+.cfg-radio .cr-title{font-size:11px;font-weight:700;display:block;color:var(--text);}
+.cfg-radio .cr-sub{font-size:9px;color:var(--muted);font-family:'Roboto Mono',monospace;}
+/* Export modal */
+.exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;text-align:left;}
+.exp-field label{display:block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+.exp-field input{width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:4px;padding:6px 9px;font-size:13px;font-family:'Roboto Mono',monospace;color:var(--text);outline:none;transition:.15s;}
+.exp-field input:focus{border-color:var(--accent);}
+.btn-apply{width:100%;padding:8px;border-radius:4px;border:none;background:var(--accent);color:#fff;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;letter-spacing:2px;cursor:pointer;transition:.15s;margin-top:4px;}
+.btn-apply:hover{filter:brightness(1.1);}
+.btn-apply.green{background:#27a855;}
+.btn-apply.green:hover{filter:brightness(1.1);}
+.parse-log{flex-shrink:0;background:var(--surface);border-top:1px solid var(--border);padding:3px 14px;font-size:9px;font-family:'Roboto Mono',monospace;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* BADGES REMOVIDOS */
+.badge{display:none !important;}
+
+</style>
+
+<style>
+#legend{display:none !important;}
+</style>
+
+</head>
+<body>
+
+<header>
+  <a href="https://vapozeiro.com.br/#ferramentas"
+   style="text-decoration:none;border:1px solid var(--border2);padding:6px 12px;border-radius:8px;font-size:13px;color:var(--text);font-family:'Roboto Mono',monospace;white-space:nowrap;display:inline-flex;align-items:center;">
+   ← Voltar
+</a>
+  <div class="h-title"><h1><span style="color:var(--text);">VAPO</span><span style="color:#22a96b;">ZEIRO</span></h1></div>
+  <div class="route-pill" id="routePill">Aguardando manifesto...</div>
+  <div id="legend"></div>
+  <div class="hstats">
+    <div class="hs"><div class="hl">Ocupação</div><div class="hv" id="hPct">—</div></div>
+    <div class="hs"><div class="hl">Peso</div><div class="hv" id="hPeso">—</div></div>
+    <div class="hs"><div class="hl">Itens</div><div class="hv" id="hN">—</div></div>
+    <div class="hs" id="hsPesoM2" title="t/m2"><div class="hl">t/m²</div><div class="hv" id="hPesoM2" style="transition:color .3s">—</div></div>
+  </div>
+  <div class="theme-toggle" onclick="toggleTheme()"><span id="themeIcon">🌙</span><span id="themeLabel">Escuro</span></div>
+  <button class="btn btn-cfg" onclick="openCfg()">⚙ Convés</button>
+  <button class="btn btn-cfg" id="btnUndo" onclick="undo()" title="Desfazer (Ctrl+Z)">↩ Desfazer</button>
+  <button class="btn btn-draw" id="btnDraw" onclick="toggleDrawMode()">⬛ Área Auto</button>
+  <button class="btn btn-up"  onclick="openUploadTracked('header')">↑ Manifesto</button>
+  <button class="btn btn-pdf" onclick="openExport()">⬇ Exportar PDF</button>
+  <button class="btn btn-clear" onclick="clearDeck()">⟳ Limpar</button>
+</header>
+
+<div class="workspace">
+  <div class="sidebar">
+    <div class="sbh"><h2>Cargas do Manifesto</h2><span class="badge" id="badge">0</span></div>
+    <div id="fbar"><button class="fb active" onclick="setFil('ALL',this)">TODOS</button></div>
+    <div class="clist" id="clist">
+      <div class="empty-state"><div class="ei">📋</div>
+        <p>Faça upload do manifesto PDF para carregar as cargas automaticamente</p>
+        <button class="btn btn-up" style="margin-top:12px;width:100%;" onclick="openUploadTracked('sidebar')">↑ Carregar Manifesto</button>
+      </div>
+    </div>
+  </div>
+  <div class="dpanel">
+    <div class="dtbar">
+      <h2 id="deckTitle">CONVÉS PRINCIPAL — 57 m × 15,8 m — 19 BAIAS DE 3 m</h2>
+      <div style="display:flex;gap:10px;">
+        <div class="hs"><div class="hl">Área conv.</div><div class="hv" id="sDeckArea">900,6 m²</div></div>
+        <div class="hs"><div class="hl">Área ocup.</div><div class="hv" id="sArea">0 m²</div></div>
+      </div>
+    </div>
+    <div class="dwrap" id="dwrap">
+      <div class="deck" id="deck">
+        <div id="deckClip" style="position:absolute;inset:0;overflow:hidden;border-radius:4px;">
+          <canvas id="gridCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+    <div id="ibar">
+      <span style="font-size:10px;color:var(--muted)">Carregue um manifesto para começar</span>
+      <div class="hint-key" style="margin-left:auto">
+        <span>Arraste → convés</span><span class="sep">·</span>
+        <span><span class="kbadge">R</span> gira</span><span class="sep">·</span>
+        <span><span class="kbadge">✕</span> remove</span>
+      </div>
+    </div>
+    <div id="umPanel" style="display:none;position:fixed;bottom:60px;left:50%;transform:translateX(-50%);z-index:9999;min-width:600px;max-width:880px;width:70vw;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:14px 18px;box-shadow:0 8px 40px rgba(0,0,0,.7);"></div>
+  </div>
+</div>
+
+<div class="parse-log" id="parseLog">Aguardando manifesto PDF...</div>
+<div class="tooltip" id="tt"></div>
+<div class="tooltip" id="pm2Tooltip"></div>
+<div id="dragGhost">
+  <span id="ghostLabel"></span><span class="gh-sub" id="ghostSub"></span>
+  <div class="gh-hint">R = girar · solte para posicionar</div>
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="modal-bg hidden" id="uploadModal">
+  <div class="modal">
+    <h2>📄 Upload do Manifesto</h2>
+    <p>Selecione o PDF do manifesto Petrobras.<br>As cargas são extraídas automaticamente.</p>
+    <div class="modal-drop" id="modalDrop" onclick="document.getElementById('fileInput').click()">
+      <div class="mdi">📂</div><p><b>Clique para selecionar</b> ou arraste o PDF aqui</p>
+    </div>
+    <div class="modal-status" id="modalStatus"></div>
+    <div class="modal-close" onclick="closeUpload()">Fechar</div>
+    <input type="file" id="fileInput" accept=".pdf,application/pdf" style="display:none">
+  </div>
+</div>
+
+<!-- CONFIG MODAL -->
+<div class="modal-bg hidden" id="cfgModal">
+  <div class="modal">
+    <h2>⚙ Configurar Convés</h2>
+    <p>Defina as dimensões, a orientação das baias e as regras da área automática.</p>
+    <div class="cfg-section">
+      <h3>Dimensões</h3>
+      <div class="cfg-grid">
+        <div class="cfg-field"><label>Comprimento (m)</label><input type="number" id="cfgLen" value="57" min="10" max="300" step="0.1"></div>
+        <div class="cfg-field"><label>Largura (m)</label><input type="number" id="cfgWid" value="15.8" min="5" max="80" step="0.1"></div>
+        <div class="cfg-field"><label>Nº de Baias</label><input type="number" id="cfgBaias" value="19" min="1" max="60" step="1"></div>
+        <div class="cfg-field"><label>Peso max. convés (t/m²)</label><input type="number" id="cfgPesoM2" value="5" min="0.1" max="50" step="0.1"></div>
+        <div class="cfg-field"><label>Área máxima por ilha (m)</label><input type="number" id="cfgAreaMaxIlha" value="9.4" min="0.5" max="100" step="0.1"></div>
+        <div class="cfg-field"><label>Espaço mínimo entre ilhas (m)</label><input type="number" id="cfgEspacoMinIlhas" value="1" min="0" max="20" step="0.1"></div>
+      </div>
+    </div>
+    <div class="cfg-section">
+      <h3>Numeração das Baias</h3>
+      <div class="cfg-radio-group">
+        <label class="cfg-radio selected" id="radioFwd" onclick="selectBaiaDir('fwd')">
+          <input type="radio" name="baiaDir" value="fwd" checked>
+          <span class="cr-icon">⚓</span>
+          <span class="cr-text"><span class="cr-title">Baia 1 = Vante (direita)</span><span class="cr-sub">Conta: direita→esquerda</span></span>
+        </label>
+        <label class="cfg-radio" id="radioAft" onclick="selectBaiaDir('aft')">
+          <input type="radio" name="baiaDir" value="aft">
+          <span class="cr-icon">🔧</span>
+          <span class="cr-text"><span class="cr-title">Baia 1 = Ré (esquerda)</span><span class="cr-sub">Conta: esquerda→direita</span></span>
+        </label>
+      </div>
+    </div>
+    <button class="btn-apply" onclick="applyCfg()">APLICAR</button>
+    <br><br>
+    <div class="modal-close" onclick="closeCfg()">Cancelar</div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-bg hidden" id="exportModal">
+  <div class="modal">
+    <h2>⬇ Exportar Plano de Carga</h2>
+    <p>Preencha as informações para o documento.</p>
+    <div class="exp-grid">
+      <div class="exp-field"><label>Nº do Atendimento</label><input type="text" id="expAtend" placeholder="Ex: 509470445" value="509470445"></div>
+      <div class="exp-field"><label>Data</label><input type="date" id="expData"></div>
+      <div class="exp-field" style="grid-column:1/-1"><label>Embarcação</label><input type="text" id="expNavio" placeholder="Ex: STARNAV PHOENIX" value="STARNAV PHOENIX"></div>
+    </div>
+    <button class="btn-apply green" onclick="generatePDF()">📄 GERAR PDF</button>
+    <br><br>
+    <div class="modal-close" onclick="closeExport()">Cancelar</div>
+  </div>
+</div>
+
+<!-- (fill zone now inline in zone bar) -->
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── CONFIG ────────────────────────────────────────────────────────
+let CFG = { L:57, W:15.8, N:19, baiaDir:'fwd', pesoM2:5, areaMaxIlha:9.4, espacoMinIlhas:1 };
+// VANTE always RIGHT. baiaDir 'fwd': baia 1=RIGHT(vante/proa), numbers N→1 left→right. 'aft': baia 1=LEFT(ré/popa), numbers 1→N left→right.
+
+const PALETTE = [
+  {hex:'#f5a623',bg:'rgba(245,166,35,.18)',bd:'rgba(245,166,35,.7)'},
+  {hex:'#27c93f',bg:'rgba(39,201,63,.18)', bd:'rgba(39,201,63,.7)'},
+  {hex:'#ff5f5f',bg:'rgba(255,95,95,.18)', bd:'rgba(255,95,95,.7)'},
+  {hex:'#58a6ff',bg:'rgba(88,166,255,.18)',bd:'rgba(88,166,255,.7)'},
+  {hex:'#d97cf5',bg:'rgba(217,124,245,.18)',bd:'rgba(217,124,245,.7)'},
+  {hex:'#f5e642',bg:'rgba(245,230,66,.18)',bd:'rgba(245,230,66,.7)'},
+  {hex:'#42f5e3',bg:'rgba(66,245,227,.18)',bd:'rgba(66,245,227,.7)'},
+  {hex:'#ff9a3c',bg:'rgba(255,154,60,.18)',bd:'rgba(255,154,60,.7)'},
+];
+
+let CARGOS=[]; let DEST_MAP={}; let placed={};
+const UNDO_LIMIT=30;
+let undoStack=[];
+function pushUndo(){undoStack.push(JSON.stringify(placed));if(undoStack.length>UNDO_LIMIT)undoStack.shift();}
+function undo(){if(undoStack.length===0){setLog('⚠ Nada para desfazer');return;}placed=JSON.parse(undoStack.pop());buildSidebar();buildDeck();setLog('↩ Desfeito');}
+let filterDest='ALL'; let hiddenDest={};
+let deckScale=1;
+let ghostId=null,ghostRotated=false,ghostActive=false;
+let selectedIds=new Set();
+let multiMoveOrigins={};
+function clearSelection(){selectedIds.forEach(id=>{const el=document.querySelector('.dc[data-id="'+id+'"]');if(el)el.classList.remove('selected');});selectedIds.clear();}
+let moveId=null,moveEl=null,moveSX=0,moveSY=0,moveOrigX=0,moveOrigY=0;
+let hoveredId=null,darkMode=true;
+let pm2Meta=null;
+
+// ── THEME ─────────────────────────────────────────────────────────
+function toggleTheme(){
+  darkMode=!darkMode;
+  document.documentElement.setAttribute('data-theme',darkMode?'dark':'light');
+  document.getElementById('themeIcon').textContent=darkMode?'🌙':'☀️';
+  document.getElementById('themeLabel').textContent=darkMode?'Escuro':'Claro';
+  buildDeck();
+}
+
+// ── COLOURS ───────────────────────────────────────────────────────
+function getColor(k){return DEST_MAP[k]?.color||PALETTE[0];}
+function getLabel(k){return DEST_MAP[k]?.label||k;}
+function isLight(hex){const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);return(r*299+g*587+b*114)/1000>140;}
+// ── BANCO DE DADOS DAS UNIDADES MARÍTIMAS ─────────────────────────
+const UM_DB = {
+  'P-67': {
+    nome: 'PETROBRAS 67',
+    tipo: 'FPSO',
+    campo: 'TUPI',
+    aproamento: 187,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 48, alcance: 40, bolaPeso: 7, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 48, alcance: 40, bolaPeso: 7, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',  // opera exclusivamente por boreste
+    obs: ''
+  },
+  'P-69': {
+    nome: 'PETROBRAS 69',
+    tipo: 'FPSO',
+    campo: 'TUPI',
+    aproamento: 189,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 48, alcance: 40, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 48, alcance: 40, bolaPeso: 7.5, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',
+    obs: ''
+  },
+  'UMPA': {
+    nome: 'UMS PRAIA DO ARPOADOR',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'TUPI',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 60, alcance: 55, bolaPeso: 15, moitao: null
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 65, alcance: 60, bolaPeso: 25, moitao: null
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK.'
+  },
+  'FPAG': {
+    nome: 'FPSO ANITA GARIBALDI',
+    tipo: 'FPSO',
+    campo: 'MARLIM',
+    aproamento: 189,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 44, alcance: 44, bolaPeso: 10, moitao: 35
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 44, alcance: 44, bolaPeso: 10, moitao: 35
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'FPAN': {
+    nome: 'FPSO ANNA NERY',
+    tipo: 'FPSO',
+    campo: 'MARLIM',
+    aproamento: 195,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 45.6, alcance: 39, bolaPeso: 7.5, moitao: 35
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 45.6, alcance: 39, bolaPeso: 7.5, moitao: 35
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'FPAR': {
+    nome: 'FPSO CIDADE DE ANGRA DOS REIS',
+    tipo: 'FPSO',
+    campo: 'TUPI',
+    aproamento: 195,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 54, alcance: 54, bolaPeso: 14, moitao: 65
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 20, alcance: 20, bolaPeso: 7.5, moitao: 20
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 20, alcance: 20, bolaPeso: 7, moitao: 20
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'FPAT': {
+    nome: 'FPSO ALMIRANTE TAMANDARE',
+    tipo: 'FPSO',
+    campo: 'BUZIOS',
+    aproamento: 189,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 39.5, alcance: 38, bolaPeso: null, moitao: 30
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 39.2, alcance: 38, bolaPeso: null, moitao: 35
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'CDAN': {
+    nome: 'FPSO CIDADE DE ANCHIETA',
+    tipo: 'FPSO',
+    campo: 'JUBARTE',
+    aproamento: 62,
+    posicionamento: 'TURRET',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 22, alcance: 20, bolaPeso: 7.5, moitao: 20
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 20, alcance: 18, bolaPeso: 7.5, moitao: 15
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 12.5, alcance: 12.5, bolaPeso: 3, moitao: 7.5
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'FPAB': {
+    nome: 'FPSO ALMIRANTE BARROSO',
+    tipo: 'FPSO',
+    campo: 'BUZIOS',
+    aproamento: 183,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 35, alcance: 35, bolaPeso: 2, moitao: 15
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 35, alcance: 35, bolaPeso: 2, moitao: 15
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'FPAD': {
+    nome: 'FPSO ALEXANDRE DE GUSMÃO',
+    tipo: 'FPSO',
+    campo: 'MERO',
+    aproamento: 200,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 40, alcance: 40, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 40, alcance: 40, bolaPeso: 7.5, moitao: 35
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Defensas: Sim.'
+  },
+  'FPNT': {
+    nome: 'FPSO CIDADE DE NITERÓI',
+    tipo: 'FPSO',
+    campo: 'MARLIM LESTE',
+    aproamento: 215,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: false,
+        lanca: 22, alcance: 20, bolaPeso: 7.5, moitao: 20
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 20, alcance: 18, bolaPeso: 7.5, moitao: 15
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 12.5, alcance: 12.5, bolaPeso: 3, moitao: 7.5
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'FPPA': {
+    nome: 'FPSO PARATY',
+    tipo: 'FPSO',
+    campo: 'TUPI',
+    aproamento: 194,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: false,
+        lanca: 25, alcance: 25, bolaPeso: 7, moitao: 20
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 25, alcance: 25, bolaPeso: 7, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Defensas: Sim.'
+  },
+  'FPPL': {
+    nome: 'FPSO PIONEIRO DE LIBRA',
+    tipo: 'FPSO',
+    campo: 'MERO',
+    aproamento: 'N/A',
+    posicionamento: 'TURRET',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 56, alcance: 48, bolaPeso: 15, moitao: 33
+      },
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 56, alcance: 48, bolaPeso: 15, moitao: 33
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'FPSA': {
+    nome: 'FPSO CIDADE DE SAQUAREMA',
+    tipo: 'FPSO',
+    campo: 'TUPI',
+    aproamento: 194,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 37, alcance: 37.2, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 37, alcance: 35, bolaPeso: 7.5, moitao: 7.5
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'FPSE': {
+    nome: 'FPSO SEPETIBA',
+    tipo: 'FPSO',
+    campo: 'MERO',
+    aproamento: 185,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: false,
+        lanca: 35, alcance: 25, bolaPeso: null, moitao: null
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 35, alcance: 25, bolaPeso: null, moitao: null
+      }
+    ],
+    bordoOp: 'BE',
+    obs: ''
+  },
+  'FPCG': {
+    nome: 'FPSO CAMPOS DOS GOYTACAZES',
+    tipo: 'FPSO',
+    campo: 'TARTARUGA VERDE',
+    aproamento: 192,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: false,
+        lanca: 44, alcance: 44, bolaPeso: 10, moitao: 35
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 44, alcance: 44, bolaPeso: 10, moitao: 35
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'FPCR': {
+    nome: 'FPSO CARIOCA',
+    tipo: 'FPSO',
+    campo: 'SEPIA',
+    aproamento: 198,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: false,
+        lanca: 44, alcance: 40, bolaPeso: 7.5, moitao: 35
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 44, alcance: 40, bolaPeso: 7.5, moitao: 35
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'FPCS': {
+    nome: 'FPSO CIDADE DE SANTOS',
+    tipo: 'FPSO',
+    campo: 'URUGUA',
+    aproamento: 203,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 21, alcance: 21, bolaPeso: 7, moitao: 20
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 18, alcance: 18, bolaPeso: 7, moitao: 15
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'FPDC': {
+    nome: 'FPSO MARECHAL DUQUE DE CAXIAS',
+    tipo: 'FPSO',
+    campo: 'MERO',
+    aproamento: 178,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 44, alcance: 44, bolaPeso: 10, moitao: 28
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 44, alcance: 44, bolaPeso: 10, moitao: 28
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'FPGU': {
+    nome: 'FPSO GUANABARA',
+    tipo: 'FPSO',
+    campo: 'MERO',
+    aproamento: 195,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: false,
+        lanca: 40, alcance: 35, bolaPeso: 10, moitao: 35
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 40, alcance: 35, bolaPeso: 10, moitao: 35
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'FPIB': {
+    nome: 'FPSO CIDADE DE ILHABELA',
+    tipo: 'FPSO',
+    campo: 'SAPINHOA',
+    aproamento: 195,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 37, alcance: 35, bolaPeso: 7, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 37, alcance: 35, bolaPeso: 7, moitao: 16
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'FPIT': {
+    nome: 'FPSO CIDADE DE ITAGUAÍ',
+    tipo: 'FPSO',
+    campo: 'TUPI',
+    aproamento: 199,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: false,
+        lanca: 25, alcance: 32, bolaPeso: 7.5, moitao: 30
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 25, alcance: 22, bolaPeso: 7.5, moitao: 15
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'FPMA': {
+    nome: 'FPSO MANGARATIBA',
+    tipo: 'FPSO',
+    campo: 'TUPI',
+    aproamento: 187,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 36, alcance: 22, bolaPeso: 15, moitao: 7
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 24, alcance: 23, bolaPeso: 30, moitao: 7
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Defensas: Sim.'
+  },
+  'FPMQ': {
+    nome: 'FPSO MARIA QUITERIA',
+    tipo: 'FPSO',
+    campo: 'JUBARTE',
+    aproamento: 201,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: false,
+        lanca: 32, alcance: 30, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 32, alcance: 30, bolaPeso: 7.5, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'FPMR': {
+    nome: 'FPSO MARICÁ',
+    tipo: 'FPSO',
+    campo: 'TUPI',
+    aproamento: 187,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: false,
+        lanca: 37, alcance: 19, bolaPeso: 7, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 37, alcance: 35, bolaPeso: 7, moitao: 16
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'NS-51': {
+    nome: 'SEA HELIX I',
+    tipo: 'NAVIO SONDA',
+    campo: 'ALBACORA',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 35
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 50, alcance: 50, bolaPeso: 20, moitao: null
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 35
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 35
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Defensas: Não.'
+  },
+  'NS-52': {
+    nome: 'SIEM HELIX II',
+    tipo: 'NAVIO SONDA',
+    campo: 'ALBACORA',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 22, alcance: 22, bolaPeso: 20, moitao: 20
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 32, alcance: 30, bolaPeso: 15, moitao: 60
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 46, alcance: 44, bolaPeso: 20, moitao: 250
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'FPSP': {
+    nome: 'FPSO CIDADE DE SÃO PAULO',
+    tipo: 'FPSO',
+    campo: 'SAPINHOA',
+    aproamento: 195,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      { pos: 'Proa BE', operacional: false, lanca: 26, alcance: 24, bolaPeso: 7.5, moitao: 20 },
+      { pos: 'Meia-Nau BE', operacional: true, lanca: 22, alcance: 22, bolaPeso: 7.5, moitao: 15 }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'FSME': {
+    nome: 'FPSO CIDADE DE MACAÉ',
+    tipo: 'FSO',
+    campo: 'ALBACORA',
+    aproamento: 'N/A',
+    posicionamento: 'TURRET',
+    guindastes: [
+      { pos: 'Popa BB', operacional: true, lanca: 22, alcance: 18, bolaPeso: null, moitao: 15 },
+      { pos: 'Popa BE', operacional: true, lanca: 22, alcance: 18, bolaPeso: null, moitao: 15 }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'MOP1': {
+    nome: 'MÓDULO DE OPERAÇÃO',
+    tipo: 'JAQUETA',
+    campo: 'UNES',
+    aproamento: 180,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      { pos: 'Proa BB', operacional: true, lanca: 15, alcance: 15, bolaPeso: null, moitao: 1.75 }
+    ],
+    bordoOp: 'BB',
+    obs: 'Conexões: CAMLOCK. Defensas: Não.'
+  },
+  'NS-38': {
+    nome: 'WEST POLARIS',
+    tipo: 'NAVIO SONDA',
+    campo: 'RUBA',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      { pos: 'Proa BB', operacional: true, lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85 },
+      { pos: 'Proa BE', operacional: true, lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85 },
+      { pos: 'Meia-Nau BE', operacional: true, lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85 },
+      { pos: 'Popa BB', operacional: true, lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85 }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'NS-29': {
+    nome: 'CAROLINA',
+    tipo: 'NAVIO SONDA',
+    campo: 'BUZIOS',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      { pos: 'Proa BB', operacional: true, lanca: 51, alcance: 51, bolaPeso: 15, moitao: 85 },
+      { pos: 'Proa BE', operacional: true, lanca: 51, alcance: 51, bolaPeso: 15, moitao: 50 },
+      { pos: 'Meia-Nau BE', operacional: true, lanca: 51, alcance: 51, bolaPeso: 15, moitao: 85 },
+      { pos: 'Popa BB', operacional: true, lanca: 51, alcance: 51, bolaPeso: 15, moitao: 50 }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'NS-31': {
+    nome: 'PETROBRAS 10000',
+    tipo: 'NAVIO SONDA',
+    campo: 'MARLIM SUL',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      { pos: 'Proa BB', operacional: true, lanca: 45, alcance: 42, bolaPeso: 17, moitao: 85 },
+      { pos: 'Proa BE', operacional: true, lanca: 45, alcance: 42, bolaPeso: 17, moitao: 85 },
+      { pos: 'Popa BB', operacional: true, lanca: 45, alcance: 42, bolaPeso: 17, moitao: 85 },
+      { pos: 'Popa BE', operacional: true, lanca: 45, alcance: 42, bolaPeso: 17, moitao: 85 }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Não.'
+  },
+  'NS-32': {
+    nome: 'NORBE VIII',
+    tipo: 'NAVIO SONDA',
+    campo: 'RONCADOR',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      { pos: 'Proa BB', operacional: true, lanca: 51, alcance: 46, bolaPeso: 15, moitao: 85 },
+      { pos: 'Proa BE', operacional: true, lanca: 51, alcance: 46, bolaPeso: 15, moitao: 50 },
+      { pos: 'Popa BB', operacional: true, lanca: 51, alcance: 46, bolaPeso: 15, moitao: 50 },
+      { pos: 'Popa BE', operacional: true, lanca: 51, alcance: 46, bolaPeso: 15, moitao: 85 }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Não.'
+  },
+  'NS-33': {
+    nome: 'NORBE IX',
+    tipo: 'NAVIO SONDA',
+    campo: 'JUBARTE',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 51, alcance: 46, bolaPeso: 15, moitao: 85
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 51, alcance: 46, bolaPeso: 15, moitao: 50
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 51, alcance: 46, bolaPeso: 15, moitao: 50
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 51, alcance: 46, bolaPeso: 15, moitao: 85
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Não.'
+  },
+  'NS-36': {
+    nome: 'TAKATSUGU J',
+    tipo: 'NAVIO SONDA',
+    campo: 'PBS',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 51, alcance: 46, bolaPeso: 15, moitao: 85
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 51, alcance: 46, bolaPeso: 15, moitao: 50
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 51, alcance: 46, bolaPeso: 15, moitao: 50
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 51, alcance: 46, bolaPeso: 15, moitao: 85
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'NS-39': {
+    nome: 'DEEPWATER MYKONOS',
+    tipo: 'NAVIO SONDA',
+    campo: 'MERO',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 42.4, alcance: 42.4, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 42.4, alcance: 42.4, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 42.4, alcance: 42.4, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 42.4, alcance: 42.4, bolaPeso: 17, moitao: 85
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'NS-40': {
+    nome: 'DEEPWATER CORCOVADO',
+    tipo: 'NAVIO SONDA',
+    campo: 'JUBARTE',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 27.6, alcance: 42.3, bolaPeso: 17, moitao: 34
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 27.6, alcance: 42.3, bolaPeso: 17, moitao: 34
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 27.6, alcance: 42.3, bolaPeso: 17, moitao: 34
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 27.6, alcance: 42.3, bolaPeso: 17, moitao: 34
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'NS-41': {
+    nome: 'ODN I',
+    tipo: 'NAVIO SONDA',
+    campo: 'MARLIM',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'NS-42': {
+    nome: 'ODN II',
+    tipo: 'NAVIO SONDA',
+    campo: 'MORPHO',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 51, alcance: 46, bolaPeso: 15, moitao: 85
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 51, alcance: 46, bolaPeso: 15, moitao: 50
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 51, alcance: 46, bolaPeso: 15, moitao: 50
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 51, alcance: 46, bolaPeso: 15, moitao: 85
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'NS-43': {
+    nome: 'AMARALINA STAR',
+    tipo: 'NAVIO SONDA',
+    campo: 'RONCADOR',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 46, alcance: 51, bolaPeso: 17, moitao: 50
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 46, alcance: 51, bolaPeso: 17, moitao: 50
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 46, alcance: 51, bolaPeso: 17, moitao: 50
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 46, alcance: 51, bolaPeso: 17, moitao: 50
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'NS-44': {
+    nome: 'LAGUNA STAR',
+    tipo: 'NAVIO SONDA',
+    campo: 'RONCADOR',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'NS-45': {
+    nome: 'BRAVA STAR',
+    tipo: 'NAVIO SONDA',
+    campo: 'ALBACORA',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 50, alcance: 50, bolaPeso: 20, moitao: 165
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 45, alcance: 45, bolaPeso: 20, moitao: 100
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 45, alcance: 45, bolaPeso: 20, moitao: 100
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'NS-47': {
+    nome: 'WEST TELLUS',
+    tipo: 'NAVIO SONDA',
+    campo: 'BUZIOS',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 49.5, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 49.5, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 49.5, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 49.5, alcance: 42, bolaPeso: 17, moitao: 85
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'NS-48': {
+    nome: 'WEST CARINA',
+    tipo: 'NAVIO SONDA',
+    campo: 'BUZIOS',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      { pos: 'Proa BB', operacional: true, lanca: 42, alcance: 42, bolaPeso: 17, moitao: 35 },
+      { pos: 'Proa BE', operacional: true, lanca: 50, alcance: 50, bolaPeso: 30, moitao: null },
+      { pos: 'Popa BB', operacional: true, lanca: 42, alcance: 42, bolaPeso: 17, moitao: 35 },
+      { pos: 'Popa BE', operacional: true, lanca: 42, alcance: 42, bolaPeso: 17, moitao: 35 }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'NS-63': {
+    nome: 'TIDAL ACTION',
+    tipo: 'NAVIO SONDA',
+    campo: 'RONCADOR',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 50, alcance: 50, bolaPeso: null, moitao: 165
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 20, moitao: 85
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'P-09': {
+    nome: 'PETROBRAS 09',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'CORVINA',
+    aproamento: 2,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 50, alcance: 50, bolaPeso: 0.5, moitao: 33
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 45, alcance: 42, bolaPeso: 0.5, moitao: 40
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 45, alcance: 42, bolaPeso: 0.5, moitao: 40
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 45, alcance: 42, bolaPeso: 0.5, moitao: 40
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK.'
+  },
+  'P-18': {
+    nome: 'PETROBRAS 18',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'MARLIM',
+    aproamento: 22,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 50, alcance: 50, bolaPeso: null, moitao: 26.7
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 56, alcance: 56, bolaPeso: null, moitao: 25.6
+      }
+    ],
+    bordoOp: 'BB',
+    obs: 'Conexões: DRYBREAK.'
+  },
+  'P-19': {
+    nome: 'PETROBRAS 19',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'MARLIM',
+    aproamento: null,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 47, alcance: 40, bolaPeso: 2.9, moitao: 9.2
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 47, alcance: 40, bolaPeso: 2.9, moitao: 9.2
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK.'
+  },
+  'P-20': {
+    nome: 'PETROBRAS 20',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'MARLIM',
+    aproamento: 30,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 69, alcance: 60, bolaPeso: 10, moitao: 50
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK.'
+  },
+  'P-25': {
+    nome: 'PETROBRAS 25',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'ALBACORA',
+    aproamento: null,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 36, alcance: 30, bolaPeso: 6.3, moitao: 35
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 42, alcance: 36, bolaPeso: 6.3, moitao: 32
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK.'
+  },
+  'P-31': {
+    nome: 'PETROBRAS 31',
+    tipo: 'FPSO',
+    campo: 'ALBACORA',
+    aproamento: 'N/A',
+    posicionamento: 'TURRET',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 45, alcance: 42, bolaPeso: null, moitao: 22
+      },
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 45, alcance: 42, bolaPeso: null, moitao: 22
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 45, alcance: 42, bolaPeso: null, moitao: 22
+      }
+    ],
+    bordoOp: 'BB',
+    obs: 'Conexões: DRYBREAK.'
+  },
+  'P-35': {
+    nome: 'PETROBRAS 35',
+    tipo: 'FPSO',
+    campo: 'MARLIM',
+    aproamento: 'N/A',
+    posicionamento: 'TURRET',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 44, alcance: 43.3, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 44, alcance: 43.3, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 44, alcance: 43.3, bolaPeso: 7.5, moitao: 25
+      }
+    ],
+    bordoOp: 'BB',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'P-37': {
+    nome: 'PETROBRAS 37',
+    tipo: 'FPSO',
+    campo: 'MARLIM',
+    aproamento: 'N/A',
+    posicionamento: 'TURRET',
+    guindastes: [
+      { pos: 'Proa BB', operacional: true, lanca: 44, alcance: 43.9, bolaPeso: 7.5, moitao: 18 },
+      { pos: 'Meia-Nau BB', operacional: true, lanca: 44, alcance: 43.9, bolaPeso: 7.5, moitao: 18 },
+      { pos: 'Meia-Nau BE', operacional: true, lanca: 44, alcance: 43.9, bolaPeso: 7.5, moitao: 18 }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'P-38': {
+    nome: 'PETROBRAS 38',
+    tipo: 'FSO',
+    campo: 'MARLIM SUL',
+    aproamento: 'N/A',
+    posicionamento: 'TURRET',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 44, alcance: 43.9, bolaPeso: 7.5, moitao: 18
+      },
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 44, alcance: 43.9, bolaPeso: 7.5, moitao: 18
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 44, alcance: 43.9, bolaPeso: 7.5, moitao: 18
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'P-40': {
+    nome: 'PETROBRAS 40',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'MARLIM SUL',
+    aproamento: 8,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 45, alcance: 45, bolaPeso: 7.5, moitao: 22.5
+      },
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 45, alcance: 45, bolaPeso: 7.5, moitao: 22.5
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 28, alcance: 28, bolaPeso: null, moitao: 5
+      }
+    ],
+    bordoOp: 'BB',
+    obs: 'Defensas: Não.'
+  },
+  'NS-54': {
+    nome: 'VALARIS DS-4',
+    tipo: 'NAVIO SONDA',
+    campo: 'ARAM',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 22, alcance: 22, bolaPeso: 1.5, moitao: 20
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 32, alcance: 30, bolaPeso: 15, moitao: 60
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 46, alcance: 42, bolaPeso: 20, moitao: 300
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'NS-55': {
+    nome: 'WEST JUPITER',
+    tipo: 'NAVIO SONDA',
+    campo: 'BUZIOS',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 67.8, alcance: 50, bolaPeso: 20, moitao: 165
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 47.7, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 47.7, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 47.7, alcance: 42, bolaPeso: 17, moitao: 85
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'NS-56': {
+    nome: 'DEEPWATER ORION',
+    tipo: 'NAVIO SONDA',
+    campo: 'JUBARTE',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 50, alcance: 50, bolaPeso: 20, moitao: 165
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 45, alcance: 45, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 45, alcance: 45, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 45, alcance: 45, bolaPeso: 17, moitao: 85
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'NS-57': {
+    nome: 'DHIRUBHAI DEEPWATER KG2',
+    tipo: 'NAVIO SONDA',
+    campo: 'SAPINHOA',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 47.8, alcance: 42.3, bolaPeso: 0.5, moitao: 1
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 47.8, alcance: 42.3, bolaPeso: 0.5, moitao: 1
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 47.8, alcance: 42.3, bolaPeso: 0.5, moitao: 1
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 47.8, alcance: 42.3, bolaPeso: 0.5, moitao: 1
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'NS-58': {
+    nome: 'VALARIS DS-8',
+    tipo: 'NAVIO SONDA',
+    campo: 'MARLIM SUL',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'NS-59': {
+    nome: 'NOBLE FAYE KOZACK',
+    tipo: 'NAVIO SONDA',
+    campo: 'TUPI',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 42.3, alcance: 42.3, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 50, alcance: 50, bolaPeso: 33, moitao: 85
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 51.17, alcance: 49, bolaPeso: 15, moitao: 85
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 42.3, alcance: 42.3, bolaPeso: 17, moitao: 85
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK.'
+  },
+  'NS-60': {
+    nome: 'DEEPWATER AQUILA',
+    tipo: 'NAVIO SONDA',
+    campo: 'AGUA MARINHA',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 50, alcance: 50, bolaPeso: null, moitao: 165
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 45, alcance: 42, bolaPeso: null, moitao: 100
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 45, alcance: 42, bolaPeso: null, moitao: 100
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 45, alcance: 42, bolaPeso: null, moitao: 100
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK.'
+  },
+  'NS-61': {
+    nome: 'ATLANTIC ZONDA',
+    tipo: 'NAVIO SONDA',
+    campo: 'ITAPU',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      { pos: 'Proa BB', operacional: true, lanca: 50, alcance: 50, bolaPeso: null, moitao: 165 },
+      { pos: 'Proa BE', operacional: true, lanca: 42, alcance: 42, bolaPeso: 20, moitao: 95 },
+      { pos: 'Meia-Nau BB', operacional: true, lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85 },
+      { pos: 'Meia-Nau BE', operacional: true, lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85 },
+      { pos: 'Popa BB', operacional: true, lanca: null, alcance: null, bolaPeso: null, moitao: null },
+      { pos: 'Popa BE', operacional: true, lanca: null, alcance: null, bolaPeso: null, moitao: null }
+    ],
+    bordoOp: 'AMBOS',
+    obs: ''
+  },
+  'P-43': {
+    nome: 'PETROBRAS 43',
+    tipo: 'FPSO',
+    campo: 'BARRACUDA',
+    aproamento: 213,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 58, alcance: 56, bolaPeso: 10, moitao: 15
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 58, alcance: 56, bolaPeso: 10, moitao: 15
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'P-47': {
+    nome: 'PETROBRAS 47',
+    tipo: 'FSO',
+    campo: 'VIOLA',
+    aproamento: 'N/A',
+    posicionamento: 'TURRET',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 45, alcance: 39, bolaPeso: null, moitao: 7.5
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 46.9, alcance: 40.9, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 45, alcance: 39, bolaPeso: null, moitao: 7.5
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'P-48': {
+    nome: 'PETROBRAS 48',
+    tipo: 'FPSO',
+    campo: 'CARATINGA',
+    aproamento: null,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 44, alcance: 43, bolaPeso: 7.5, moitao: 15
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 44, alcance: 43, bolaPeso: 7.5, moitao: 15
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 44, alcance: 43, bolaPeso: 7.5, moitao: 15
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'P-51': {
+    nome: 'PETROBRAS 51',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'MARLIM SUL',
+    aproamento: 0,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 45, alcance: 28, bolaPeso: 5, moitao: null
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 45, alcance: 36, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 45, alcance: 40, bolaPeso: 7.5, moitao: null
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK. Defensas: Não.'
+  },
+  'P-52': {
+    nome: 'PETROBRAS 52',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'RONCADOR',
+    aproamento: 0,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 51, alcance: 47, bolaPeso: 15, moitao: 25
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 51, alcance: 47, bolaPeso: 10, moitao: 25
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK.'
+  },
+  'P-53': {
+    nome: 'PETROBRAS 53',
+    tipo: 'FPSO',
+    campo: 'MARLIM LESTE',
+    aproamento: 'N/A',
+    posicionamento: 'TURRET',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 45, alcance: 37, bolaPeso: 10, moitao: 24
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 45, alcance: 37, bolaPeso: 10, moitao: 24
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 45, alcance: 38, bolaPeso: null, moitao: 13
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 45, alcance: 38, bolaPeso: null, moitao: 13
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK. Defensas: Sim.'
+  },
+  'P-54': {
+    nome: 'PETROBRAS 54',
+    tipo: 'FPSO',
+    campo: 'RONCADOR',
+    aproamento: 201,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 45, alcance: 45, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 20, alcance: 20, bolaPeso: null, moitao: 10
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'P-55': {
+    nome: 'PETROBRAS 55',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'RONCADOR',
+    aproamento: null,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      { pos: 'Proa BE', operacional: true, lanca: 56, alcance: 51, bolaPeso: 15, moitao: 25 },
+      { pos: 'Popa BB', operacional: true, lanca: 56, alcance: 51, bolaPeso: 15, moitao: 25 }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK.'
+  },
+  'P-56': {
+    nome: 'PETROBRAS 56',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'MARLIM SUL',
+    aproamento: 0,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 56, alcance: 51, bolaPeso: 15, moitao: 25
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 56, alcance: 51, bolaPeso: 15, moitao: 25
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK.'
+  },
+  'P-57': {
+    nome: 'PETROBRAS 57',
+    tipo: 'FPSO',
+    campo: 'JUBARTE',
+    aproamento: 234,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 47, alcance: 47, bolaPeso: 15, moitao: 25
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 47, alcance: 47, bolaPeso: 15, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'P-58': {
+    nome: 'PETROBRAS 58',
+    tipo: 'FPSO',
+    campo: 'JUBARTE',
+    aproamento: 190,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 35, alcance: 35, bolaPeso: 7.5, moitao: 15
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 35, alcance: 35, bolaPeso: 7.5, moitao: 15
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'P-62': {
+    nome: 'PETROBRAS 62',
+    tipo: 'FPSO',
+    campo: 'RONCADOR',
+    aproamento: 205,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 48, alcance: 48, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 48, alcance: 48, bolaPeso: 7.5, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Sim.'
+  },
+  'P-66': {
+    nome: 'PETROBRAS 66',
+    tipo: 'FPSO',
+    campo: 'TUPI',
+    aproamento: 185,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 48, alcance: 40, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 48, alcance: 40, bolaPeso: 7.5, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Defensas: Sim.'
+  },
+  'P-68': {
+    nome: 'PETROBRAS 68',
+    tipo: 'FPSO',
+    campo: 'BERBIGAO',
+    aproamento: 198,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 48, alcance: 40, bolaPeso: 7, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 48, alcance: 40, bolaPeso: 7, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Defensas: Sim.'
+  },
+  'P-70': {
+    nome: 'PETROBRAS 70',
+    tipo: 'FPSO',
+    campo: 'SURURU',
+    aproamento: 199,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 48, alcance: 40, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 48, alcance: 40, bolaPeso: 7.5, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'P-71': {
+    nome: 'PETROBRAS 71',
+    tipo: 'FPSO',
+    campo: 'ITAPU',
+    aproamento: 187,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 48, alcance: 40, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 48, alcance: 40, bolaPeso: 7.5, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK.'
+  },
+  'P-74': {
+    nome: 'PETROBRAS 74',
+    tipo: 'FPSO',
+    campo: 'BUZIOS',
+    aproamento: 195,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 47.45, alcance: 48, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 47.45, alcance: 48, bolaPeso: 7.5, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'P-75': {
+    nome: 'PETROBRAS 75',
+    tipo: 'FPSO',
+    campo: 'BUZIOS',
+    aproamento: 191,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 51.9, alcance: 47, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 51.9, alcance: 47, bolaPeso: 7.5, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'NS-62': {
+    nome: 'NS-62',
+    tipo: 'NAVIO SONDA',
+    campo: 'ARAM',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 50, alcance: 50, bolaPeso: null, moitao: 165
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 20, moitao: 85
+      },
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 42, alcance: 42, bolaPeso: 17, moitao: 85
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'SS-83': {
+    nome: 'ALPHA STAR',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'ALBACORA',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 48.8, alcance: 48.8, bolaPeso: 12, moitao: 60
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 48.8, alcance: 48.8, bolaPeso: 12, moitao: 70
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK.'
+  },
+  'SS-92': {
+    nome: 'SS-92',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'CORVINA',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 50.7, alcance: 48, bolaPeso: 15, moitao: 50
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 44.7, alcance: 42, bolaPeso: 15, moitao: 50
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 30, alcance: 27, bolaPeso: 10, moitao: 65
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK.'
+  },
+  'UMAC': {
+    nome: 'REALIANCE 1',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'BUZIOS',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 44, alcance: 39, bolaPeso: 5, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'P-76': {
+    nome: 'PETROBRAS 76',
+    tipo: 'FPSO',
+    campo: 'BUZIOS',
+    aproamento: 191,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 48, alcance: 25, bolaPeso: 7.5, moitao: 25
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 48, alcance: 25, bolaPeso: 7.5, moitao: 25
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'P-77': {
+    nome: 'PETROBRAS 77',
+    tipo: 'FPSO',
+    campo: 'BUZIOS',
+    aproamento: 181,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 48, alcance: 25, bolaPeso: 6.75, moitao: 12
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 48, alcance: 25, bolaPeso: 7.5, moitao: 12
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: CAMLOCK. Defensas: Sim.'
+  },
+  'P-78': {
+    nome: 'PETROBRAS 78',
+    tipo: 'FPSO',
+    campo: 'BUZIOS',
+    aproamento: 183,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 52, alcance: 52, bolaPeso: 20, moitao: 40
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 52, alcance: 52, bolaPeso: 20, moitao: 40
+      }
+    ],
+    bordoOp: 'BE',
+    obs: 'Conexões: DRYBREAK E CAMLOCK.'
+  },
+  'PGP1': {
+    nome: 'PLATAFORMA FIXA DE GAROUPA',
+    tipo: 'JAQUETA',
+    campo: 'GAROUPA',
+    aproamento: 25,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      { pos: 'Proa BB', operacional: true, lanca: 27.45, alcance: 26, bolaPeso: null, moitao: 12.49 },
+      { pos: 'Proa BE', operacional: true, lanca: 30.5, alcance: 30, bolaPeso: null, moitao: 12.97 }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK. Defensas: Não.'
+  },
+  'PMLZ': {
+    nome: 'PLATAFORMA MERLUZA',
+    tipo: 'JAQUETA',
+    campo: 'MERLUZA',
+    aproamento: 325,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 27.45, alcance: 26, bolaPeso: null, moitao: 12.49
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 30.5, alcance: 30, bolaPeso: null, moitao: 12.97
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK.'
+  },
+  'PMXL': {
+    nome: 'PLATAFORMA MEXILHÃO',
+    tipo: 'JAQUETA',
+    campo: 'MEXILHAO',
+    aproamento: 0,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 39, alcance: 39, bolaPeso: 4.6, moitao: 21.7
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 33, alcance: 33, bolaPeso: null, moitao: 6
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK.'
+  },
+  'PNA1': {
+    nome: 'PLATAFORMA FIXA DE NAMORADO 1',
+    tipo: 'JAQUETA',
+    campo: 'NAMORADO',
+    aproamento: 35,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 44, alcance: 43, bolaPeso: 14.5, moitao: 32.5
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 44, alcance: 43, bolaPeso: 14.5, moitao: 32.5
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK.'
+  },
+  'PNA2': {
+    nome: 'PLATAFORMA FIXA DE NAMORADO 2',
+    tipo: 'JAQUETA',
+    campo: 'NAMORADO',
+    aproamento: 330,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 26, alcance: 20, bolaPeso: null, moitao: 12.9
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 36, alcance: 30, bolaPeso: null, moitao: 9
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 36, alcance: 30, bolaPeso: 5.13, moitao: null
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK.'
+  },
+  'PRA1': {
+    nome: 'PLATAFORMA DE REBOMBEIO AUTÔNOMO',
+    tipo: 'JAQUETA',
+    campo: 'ALBACORA',
+    aproamento: 290,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 30, alcance: 30, bolaPeso: 5, moitao: null
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 30, alcance: 30, bolaPeso: 5, moitao: 12
+      },
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 36, alcance: 36, bolaPeso: null, moitao: 10
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Não.'
+  },
+  'SS-45': {
+    nome: 'ATLANTIC STAR',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'CONGRO',
+    aproamento: 214,
+    posicionamento: 'ANCORADA',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 37, alcance: 37, bolaPeso: 13, moitao: 55.6
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 37.5, alcance: 38, bolaPeso: 5, moitao: 30
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK.'
+  },
+  'SS-70': {
+    nome: 'SSV VICTORIA',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'BUZIOS',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 55, alcance: 40, bolaPeso: 15, moitao: 80
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 55, alcance: 40, bolaPeso: 15, moitao: 80
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Não.'
+  },
+  'SS-73': {
+    nome: 'GOLD STAR',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'JUBARTE',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 51, alcance: 48, bolaPeso: 14, moitao: 60
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 51, alcance: 48, bolaPeso: 14, moitao: 60
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK. Defensas: Não.'
+  },
+  'SS-75': {
+    nome: 'OCEAN COURAGE',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'JUBARTE',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 55, alcance: 55, bolaPeso: 20, moitao: 100
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 55, alcance: 55, bolaPeso: 21, moitao: 101
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK.'
+  },
+  'SS-79': {
+    nome: 'LONE STAR',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'MARLIM',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 47.6, alcance: 45, bolaPeso: 13.5, moitao: 63
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 53.7, alcance: 51.1, bolaPeso: 13.5, moitao: 63
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK. Defensas: Não.'
+  },
+  'SS-81': {
+    nome: 'NORBE VI',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'MEXILHAO',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 48.7, alcance: 47.6, bolaPeso: 13, moitao: 64
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 42.6, alcance: 41.5, bolaPeso: 13, moitao: 64
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK.'
+  },
+  'UMCP': {
+    nome: 'UMS CARAPEBUS',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'ATAPU',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 42.2, alcance: 42.2, bolaPeso: 15, moitao: 50
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 42.2, alcance: 42.2, bolaPeso: 15, moitao: 50
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK. Defensas: Não.'
+  },
+  'UMGR': {
+    nome: 'UMS GUARAPURÉ',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'PARQUE DAS BALEIAS',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    ativo: false,
+    guindastes: [
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 60, alcance: 65, bolaPeso: 25, moitao: 150
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 55, alcance: 60, bolaPeso: 15, moitao: 100
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK. Defensas: Não.'
+  },
+  'UMLI': {
+    nome: 'UMS LAGOA DE IMBOASSICA',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'MARLIM LESTE',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 52.3, alcance: 52.3, bolaPeso: 10, moitao: 60
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 41.6, alcance: 41.6, bolaPeso: 10, moitao: 60
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: CAMLOCK. Defensas: Não.'
+  },
+  'UMMA': {
+    nome: 'UMS MARACANÃ',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'BARRACUDA',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Meia-Nau BB', operacional: true,
+        lanca: 62, alcance: 56, bolaPeso: 15, moitao: 50
+      },
+      {
+        pos: 'Meia-Nau BE', operacional: true,
+        lanca: 63, alcance: 55, bolaPeso: 15, moitao: 100
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK.'
+  },
+  'UMPT': {
+    nome: 'UMS PRAIA DA TARTARUGA',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'BUZIOS',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 56, alcance: 51, bolaPeso: 39, moitao: 50
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 56, alcance: 51, bolaPeso: 39, moitao: 50
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK.'
+  },
+  'UMT3': {
+    nome: 'UMS TIJUCA',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'BUZIOS',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Popa BB', operacional: true,
+        lanca: 62, alcance: 56, bolaPeso: 15, moitao: 50
+      },
+      {
+        pos: 'Popa BE', operacional: true,
+        lanca: 63, alcance: 55, bolaPeso: 15, moitao: 300
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: 'Conexões: DRYBREAK E CAMLOCK.'
+  },
+  'UMVT': {
+    nome: 'UMS VITORIA',
+    tipo: 'SEMI-SUBMERSÍVEL',
+    campo: 'RONCADOR',
+    aproamento: 'N/A',
+    posicionamento: 'POSICIONAMENTO DINÂMICO',
+    guindastes: [
+      {
+        pos: 'Proa BB', operacional: true,
+        lanca: 50, alcance: 50, bolaPeso: 10, moitao: 60
+      },
+      {
+        pos: 'Proa BE', operacional: true,
+        lanca: 12, alcance: 12, bolaPeso: null, moitao: 12
+      }
+    ],
+    bordoOp: 'AMBOS',
+    obs: ''
+  }
+};
+
+function getUM(key){
+  // Match key to UM_DB (flexible)
+  const k=key.toUpperCase();
+  return UM_DB[k] || Object.entries(UM_DB).find(([id])=>k.includes(id)||id.includes(k))?.[1] || null;
+}
+
+function umMaxPeso(um){
+  if(!um) return null;
+  const ops=um.guindastes.filter(g=>g.operacional);
+  if(!ops.length) return null;
+  return Math.max(...ops.map(g=>g.bolaPeso));
+}
+
+function umAlcanceMax(um){
+  if(!um) return null;
+  const ops=um.guindastes.filter(g=>g.operacional);
+  if(!ops.length) return null;
+  return Math.max(...ops.map(g=>g.alcance));
+}
+
+
+function buildDestMap(cargos){
+  DEST_MAP={};
+  [...new Set(cargos.map(c=>c.dest))].forEach((key,i)=>{
+    DEST_MAP[key]={label:cargos.find(c=>c.dest===key).destLabel||key,color:PALETTE[i%PALETTE.length]};
+  });
+}
+
+// ── DYNAMIC UI ────────────────────────────────────────────────────
+function manifestStatsByDest(){
+  // Calculate area/kg/count from full manifest (not placed)
+  const by={};
+  Object.keys(DEST_MAP).forEach(k=>by[k]={n:0,kg:0,area:0});
+  CARGOS.forEach(c=>{
+    if(by[c.dest]){by[c.dest].n++;by[c.dest].kg+=c.kg;by[c.dest].area+=c.l*c.w;}
+  });
+  return by;
+}
+
+function buildDynamicUI(){
+  const dests=Object.keys(DEST_MAP);
+  const leg=document.getElementById('legend'); leg.innerHTML='';
+  dests.forEach(key=>{
+    const {label,color}=DEST_MAP[key];
+    const el=document.createElement('div'); el.className='leg'; el.id='leg-'+key;
+    el.style.cssText=`background:${color.bg};border-color:${color.bd};color:${color.hex};cursor:default`;
+    el.innerHTML=`<div class="ld" style="background:${color.hex}"></div>${label}`;
+    leg.appendChild(el);
+  });
+  const fb=document.getElementById('fbar');
+  fb.innerHTML='<button class="fb active" onclick="setFil(\'ALL\',this)">TODOS</button>';
+  dests.forEach(key=>{
+    const b=document.createElement('button'); b.className='fb'; b.textContent=getLabel(key);
+    b.onclick=function(){setFil(key,this);}; fb.appendChild(b);
+  });
+  buildIbar();
+}
+
+function buildIbar(){
+  const ib=document.getElementById('ibar'); ib.innerHTML='';
+  const mStats=manifestStatsByDest();
+  const sorted=Object.entries(mStats).sort((a,b)=>b[1].area-a[1].area);
+  const maxArea=sorted[0]?.[1].area||1;
+
+  sorted.forEach(([key,mv])=>{
+    const {label,color}=DEST_MAP[key]||{}; if(!label) return;
+    const um=getUM(key);
+    const maxPeso=umMaxPeso(um);
+    const alcance=umAlcanceMax(um);
+    const heavyCargos=CARGOS.filter(c=>c.dest===key && maxPeso && c.kg/1000 > maxPeso);
+    const pct=(mv.area/maxArea*100).toFixed(0);
+
+    // placed stats
+    let nPlaced=0, areaPlaced=0;
+    for(const[id,pos] of Object.entries(placed)){
+      const c=CARGOS.find(x=>x.id===id); if(!c||c.dest!==key) continue;
+      const{l,w}=effDims(c,pos.rotated); nPlaced++; areaPlaced+=l*w;
+    }
+    const placedTxt = nPlaced>0 ? `${nPlaced} emb · ${areaPlaced.toFixed(0)} m²` : `0 emb`;
+
+    let bordoCor='#888', specsInner='';
+    if(um){
+      bordoCor=um.bordoOp==='BE'?'#ff9a3c':um.bordoOp==='BB'?'#58a6ff':'#27c93f';
+      specsInner=`<button class="ibcard-specs" onclick="showUMPanel('${key}')"
+        style="color:${bordoCor};border-color:${bordoCor};background:${bordoCor}18">
+        ${um.bordoOp} · ${maxPeso}t · ${alcance}m
+      </button>`;
+    }
+    const alertInner = heavyCargos.length>0
+      ? `<span class="ibcard-alert" title="${heavyCargos.length} carga(s) excedem bola peso (${maxPeso}t)">⚠ ${heavyCargos.length} acima</span>`
+      : '';
+
+    const card=document.createElement('div'); card.className='ibcard';
+    card.innerHTML=`
+      <div class="ibcard-top">
+        <div class="ibcard-dot" style="background:${color.hex}"></div>
+        <span class="ibcard-label" style="color:${color.hex}">${label}</span>
+        <span class="ibcard-stats">${mv.n} it · ${(mv.kg/1000).toFixed(1)} t · ${mv.area.toFixed(0)} m²</span>
+      </div>
+      <div class="ibcard-row2">
+        <div class="ibcard-bar-track">
+          <div class="ibcard-bar-fill" style="width:${pct}%;background:${color.hex}"></div>
+        </div>
+        <span id="istat-${key}" class="ibcard-placed">${placedTxt}</span>
+        ${specsInner}
+        ${alertInner}
+      </div>`;
+    ib.appendChild(card);
+  });
+
+  const hint=document.createElement('div'); hint.className='hint-key';
+  hint.innerHTML=`<span>Arraste → convés</span><span class="sep">·</span>
+    <span><span class="kbadge">R</span> gira</span><span class="sep">·</span>
+    <span><span class="kbadge">✕</span> remove</span>`;
+  ib.appendChild(hint);
+}
+
+// ── PAINEL DE SPECS DA UM ─────────────────────────────────────────
+function showUMPanel(key){
+  const um=getUM(key); if(!um) return;
+  const col=DEST_MAP[key]?.color||PALETTE[0];
+  const el=document.getElementById('umPanel');
+  const maxPeso=umMaxPeso(um);
+
+  // Build guindastes table
+  const gRows=um.guindastes.map(g=>`
+    <tr style="border-top:1px solid var(--border);">
+      <td style="padding:4px 8px;color:var(--text2);font-size:11px">${g.pos}</td>
+      <td style="padding:4px 8px;text-align:center;font-family:monospace;font-size:11px">${g.lanca}m</td>
+      <td style="padding:4px 8px;text-align:center;font-family:monospace;font-size:11px">${g.alcance}m</td>
+      <td style="padding:4px 8px;text-align:center;font-family:monospace;font-size:11px;color:#f5a623;font-weight:700">${g.bolaPeso}t</td>
+      <td style="padding:4px 8px;text-align:center;font-family:monospace;font-size:11px">${g.moitao?g.moitao+'t':'—'}</td>
+    </tr>`).join('');
+
+  // Heavy cargo list
+  const heavyCargos=CARGOS.filter(c=>c.dest===key && maxPeso && c.kg/1000 > maxPeso);
+  const alertSection=heavyCargos.length>0?`
+    <div style="margin-top:10px;padding:8px;background:rgba(255,95,95,.1);border:1px solid rgba(255,95,95,.4);border-radius:4px;">
+      <div style="color:#ff5f5f;font-weight:900;font-size:11px;margin-bottom:4px">⚠ ${heavyCargos.length} CARGA(S) ACIMA DA BOLA PESO (${maxPeso}t)</div>
+      ${heavyCargos.map(c=>`<div style="font-size:10px;color:var(--text2);font-family:monospace">${c.desc} — ${(c.kg/1000).toFixed(2)}t</div>`).join('')}
+    </div>`:'<div style="color:#27c93f;font-size:11px;margin-top:6px">✓ Todas as cargas dentro dos limites do guindaste</div>';
+
+  const bordoCor=um.bordoOp==='BE'?'#ff9a3c':um.bordoOp==='BB'?'#58a6ff':'#27c93f';
+
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-size:15px;font-weight:900;color:${col.hex};letter-spacing:2px">${key}</div>
+        <div style="font-size:10px;color:var(--muted)">${um.nome} · ${um.tipo}</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:10px;background:${col.bg};border:1px solid ${col.bd};padding:2px 8px;border-radius:3px;color:${bordoCor};font-weight:700">
+          BORDO OP: ${um.bordoOp}
+        </span>
+        <span style="font-size:10px;color:var(--muted)">Aproamento ${um.aproamento==='N/A'?'N/A':um.aproamento+'°'}</span>
+        <button onclick="closeUMPanel()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0 4px">✕</button>
+      </div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-family:'Inter',sans-serif">
+      <thead>
+        <tr style="background:var(--surface2)">
+          <th style="padding:4px 8px;text-align:left;font-size:10px;color:var(--muted);letter-spacing:1px">GUINDASTE</th>
+          <th style="padding:4px 8px;font-size:10px;color:var(--muted)">LANÇA</th>
+          <th style="padding:4px 8px;font-size:10px;color:var(--muted)">ALCANCE</th>
+          <th style="padding:4px 8px;font-size:10px;color:var(--muted)">BOLA PESO</th>
+          <th style="padding:4px 8px;font-size:10px;color:var(--muted)">MOITÃO</th>
+        </tr>
+      </thead>
+      <tbody>${gRows}</tbody>
+    </table>
+    <div style="margin-top:6px;font-size:10px;color:var(--muted);font-style:italic">${um.obs}</div>
+    ${alertSection}`;
+
+  el.style.display='block';
+}
+
+function closeUMPanel(){
+  document.getElementById('umPanel').style.display='none';
+}
+
+
+function getPlacedStats(key){
+  let n=0,area=0;
+  for(const[id,pos]of Object.entries(placed)){
+    const c=CARGOS.find(x=>x.id===id); if(!c||c.dest!==key) continue;
+    const{l,w}=effDims(c,pos.rotated); n++;area+=l*w;
+  }
+  if(n===0) return '';
+  return `${n} emb · ${area.toFixed(1)} m²`;
+}
+
+// ── SCALE ─────────────────────────────────────────────────────────
+function computeScale(){
+  const wrap=document.getElementById('dwrap');
+  const ww=Math.max(120, wrap.clientWidth-28-48), wh=Math.max(120, wrap.clientHeight-18-28);
+  const ratio=CFG.L/CFG.W; let dw,dh;
+  if(ww/wh>ratio){dh=wh;dw=dh*ratio;}else{dw=ww;dh=dw/ratio;}
+  return{dw,dh,sx:dw/CFG.L,sy:dh/CFG.W};
+}
+
+// ── COLLISION ────────────────────────────────────────────────────
+function hasCollision(id,xM,yM,lM,wM){
+  const eps=0.02;
+  const ax1=xM+eps,ay1=yM+eps,ax2=xM+lM-eps,ay2=yM+wM-eps;
+  for(const[pid,pos]of Object.entries(placed)){
+    if(pid===id) continue;
+    const pc=CARGOS.find(c=>c.id===pid); if(!pc) continue;
+    const{l:pl,w:pw}=effDims(pc,pos.rotated);
+    if(ax1<pos.x+pl-eps&&ax2>pos.x+eps&&ay1<pos.y+pw-eps&&ay2>pos.y+eps) return true;
+  }
+  return false;
+}
+function findFreeSpot(id,l,w){
+  const stepX=CFG.L/CFG.N;
+  // Try both coasts: BB (y near 0) and BE (y near CFG.W-w)
+  const yStarts = [0, CFG.W - w]; // BB first, then BE
+  for(const yStart of yStarts){
+    const step = yStart === 0 ? w : -w;
+    for(let y=yStart; yStart===0 ? y<=CFG.W-w+0.01 : y>=0-0.01; y=parseFloat((y+step).toFixed(2))){
+      for(let x=0;x<=CFG.L-l+0.01;x=parseFloat((x+stepX).toFixed(2))){
+        if(!hasCollision(id,x,y,l,w)) return{x,y};
+      }
+    }
+  }
+  return null;
+}
+
+// ── GRID ─────────────────────────────────────────────────────────
+function drawGrid(dw,dh,sx,sy){
+  const cv=document.getElementById('gridCanvas'); cv.width=dw; cv.height=dh;
+  const ctx=cv.getContext('2d');
+  const bm=CFG.L/CFG.N; const dark=darkMode;
+
+  // ── GRID LINES (skip banner areas) ───────────────────────────
+  ctx.strokeStyle=dark?'#1c2d40':'#b8cde0'; ctx.lineWidth=1;
+  for(let i=1;i<CFG.N;i++){const x=i*bm*sx;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,dh);ctx.stroke();}
+  // Midline (dashed)
+  ctx.strokeStyle=dark?'#1a3050':'#c8d8e8'; ctx.setLineDash([4,6]);
+  ctx.beginPath();ctx.moveTo(0,dh/2);ctx.lineTo(dw,dh/2);ctx.stroke(); ctx.setLineDash([]);
+
+  // ── BAIA NUMBERS — large, on midline, skip banner zones ──────
+  const fs=Math.max(11,Math.min(20,bm*sx*0.38))|0;
+  ctx.font=`900 ${fs}px Barlow Condensed,sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle=dark?'rgba(150,195,240,.95)':'rgba(20,60,120,.8)';
+  for(let i=0;i<CFG.N;i++){
+    // fwd: baia 1 at left (i=0). aft: baia 1 at right (i=0 → N)
+    const bNum = CFG.baiaDir==='fwd' ? (CFG.N-i) : (i+1);
+    ctx.fillText(bNum, (i+0.5)*bm*sx, dh/2);
+  }
+  ctx.textBaseline='alphabetic';
+
+  // ── SCALE BAR ───────────────────────────────────────────────────
+  ctx.strokeStyle = dark?'rgba(80,130,190,.5)':'rgba(60,110,170,.4)'; ctx.lineWidth=1.5;
+  const barL=bm*sx;
+  const bby=dh-12;
+  ctx.beginPath();ctx.moveTo(dw-barL-14,bby);ctx.lineTo(dw-14,bby);ctx.stroke();
+  ctx.fillStyle=dark?'rgba(100,150,200,.7)':'rgba(40,80,150,.55)';
+  ctx.font=`700 7px Share Tech Mono`; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText(bm.toFixed(1)+'m', dw-barL/2-14, bby-2);
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────────
+function buildSidebar(){
+  const list=document.getElementById('clist'); list.innerHTML='';
+  if(CARGOS.length===0){
+    list.innerHTML=`<div class="empty-state"><div class="ei">📋</div>
+      <p>Faça upload do manifesto PDF</p>
+      <button class="btn btn-up" style="margin-top:12px;width:100%;" onclick="openUpload()">↑ Carregar</button></div>`;
+    document.getElementById('badge').textContent='0'; return;
+  }
+
+  let items=CARGOS.filter(c=>(filterDest==='ALL'||c.dest===filterDest)&&!hiddenDest[c.dest]);
+
+  // Collect active zone destKeys (plataformas com zona aberta)
+  const activeZoneDests=new Set(zones.map(z=>z.destKey).filter(Boolean));
+
+  // Sort unplaced: active zone dests first (largest→smallest within group), then rest
+  const unplaced=items.filter(c=>!placed[c.id]).sort((a,b)=>{
+    const aPrio=activeZoneDests.has(a.dest)?0:1;
+    const bPrio=activeZoneDests.has(b.dest)?0:1;
+    if(aPrio!==bPrio) return aPrio-bPrio;
+    return (b.l*b.w)-(a.l*a.w);
+  });
+  const placedItems=items.filter(c=>!!placed[c.id]).sort((a,b)=>(b.l*b.w)-(a.l*a.w));
+
+  // Section header helper
+  function mkSection(label, count, col){
+    const d=document.createElement('div');
+    d.style.cssText=`padding:4px 8px 2px;font-size:9px;font-weight:700;letter-spacing:1px;
+      color:${col};text-transform:uppercase;border-top:1px solid var(--border);margin-top:4px;opacity:.7;`;
+    d.textContent=`${label} (${count})`;
+    list.appendChild(d);
+  }
+
+  // Render card
+  function mkCard(c){
+    const ip=!!placed[c.id]; const col=getColor(c.dest); const lbl=getLabel(c.dest);
+    const el=document.createElement('div'); el.className=`card${ip?' placed':''}`;
+    el.dataset.id=c.id;
+    el.style.background=ip?'rgba(0,0,0,.25)':col.bg;
+    el.style.border=`1px solid ${ip?'rgba(255,255,255,.07)':col.bd}`;
+    el.style.opacity=ip?'0.45':'1';
+    el.innerHTML=`<div class="ct">
+      <div class="cdesc" style="${ip?'color:rgba(255,255,255,.4)':''}">${c.desc}</div>
+      <div class="dtag" style="background:${ip?'rgba(80,80,80,.5)':col.hex};color:${ip?'rgba(255,255,255,.4)':(isLight(col.hex)?'#000':'#fff')}">${lbl}</div>
+    </div>
+    <div class="cmeta">
+      <span class="cwt" style="${ip?'color:rgba(255,255,255,.3)':''}">⚖ ${(c.kg/1000).toFixed(2)} t</span>
+      <span class="cdm" style="${ip?'color:rgba(255,255,255,.3)':''}">📐 ${c.l}×${c.w} m</span>
+      ${ip?'<span style="color:#3fba6a;font-size:9px;font-weight:900;margin-left:auto">✓ EMBARCADO</span>':''}
+    </div>`;
+    if(!ip){
+      el.draggable=true;
+      el.addEventListener('dragstart',e=>startSidebarDrag(e,c));
+      el.addEventListener('dragend',e=>{e.currentTarget.style.opacity='';});
+    }
+    list.appendChild(el);
+  }
+
+  // Unplaced section (no header if all unplaced)
+  if(placedItems.length>0 && unplaced.length>0){
+    mkSection('A embarcar', unplaced.length, 'var(--accent)');
+  }
+  unplaced.forEach(mkCard);
+
+  // Placed section — collapsed/dimmed at bottom
+  if(placedItems.length>0){
+    mkSection('Embarcados', placedItems.length, '#3fba6a');
+    placedItems.forEach(mkCard);
+  }
+
+  // Badge shows only unplaced count
+  document.getElementById('badge').textContent=unplaced.length;
+}
+
+// ── DECK BUILD ────────────────────────────────────────────────────
+function buildDeck(){
+  const{dw,dh,sx,sy}=computeScale(); deckScale=sx;
+  const wrap=document.getElementById('dwrap'); const deck=document.getElementById('deck');
+  deck.style.width=dw+'px'; deck.style.height=dh+'px';
+  deck.style.left=((wrap.clientWidth-dw)/2)+'px';
+  deck.style.top=((wrap.clientHeight-dh)/2)+'px';
+  deck.style.position='absolute';
+  drawGrid(dw,dh,sx,sy);
+
+  // ── EXTERNAL LABELS — appended to dwrap, positioned around deck ──
+  const wrap2=document.getElementById('dwrap');
+  wrap2.querySelectorAll('.deck-label').forEach(e=>e.remove());
+
+  const deckLeft  = parseFloat(deck.style.left);
+  const deckTop   = parseFloat(deck.style.top);
+
+  const mkLabel = (cls, html, styleExtra) => {
+    const el = document.createElement('div');
+    el.className = 'deck-label ' + cls;
+    el.innerHTML = html;
+    Object.assign(el.style, styleExtra||{});
+    wrap2.appendChild(el);
+  };
+
+  // TOP: horizontally centered above deck
+  mkLabel('top', '<span class="dl-main">BOMBORDO (BB)</span><span class="dl-sub">- PORT SIDE</span>', {
+    left: deckLeft+'px', width: dw+'px', top: (deckTop)+'px'
+  });
+  // BOTTOM: horizontally centered below deck
+  mkLabel('bottom', '<span class="dl-main">BORESTE (BE)</span><span class="dl-sub">- STARBOARD SIDE</span>', {
+    left: deckLeft+'px', width: dw+'px', top: (deckTop+dh)+'px'
+  });
+  // LEFT: vertically centered left of deck
+  mkLabel('left', '<span class="dl-main">POPA - AFT</span>', {
+    top: deckTop+'px', height: dh+'px', left: deckLeft+'px'
+  });
+  // RIGHT: vertically centered right of deck
+  mkLabel('right', '<span class="dl-main">PROA - FWD</span>', {
+    top: deckTop+'px', height: dh+'px', left: (deckLeft+dw)+'px'
+  });
+  // Sync deckClip size
+  const clip=document.getElementById('deckClip');
+  clip.style.width=dw+'px'; clip.style.height=dh+'px';
+  clip.querySelectorAll('.dc').forEach(e=>e.remove());
+  deck.querySelectorAll('.dc').forEach(e=>e.remove()); // safety
+  for(const[id,pos]of Object.entries(placed)){
+    const c=CARGOS.find(x=>x.id===id); if(!c||hiddenDest[c.dest]) continue;
+    renderDeckCargo(c,pos);
+  }
+  updateStats();
+  // Re-render all zone overlays on top
+  renderAllZones();
+}
+
+function effDims(c,rot){return rot?{l:c.w,w:c.l}:{l:c.l,w:c.w};}
+function isNear(v,target,tol=0.10){return Math.abs(v-target)<=tol;}
+function isHorizontalPreferredCargo(c){
+  if(!c) return false;
+  const dims=[c.l,c.w].map(Number).sort((a,b)=>a-b);
+  const short=dims[0], long=dims[1];
+  const patterns=[
+    [2.44,2.99],
+    [2.25,3.10],
+    [2.43,3.00],
+    [2.43,2.99]
+  ];
+  return patterns.some(([ps,pl])=>isNear(short,ps)&&isNear(long,pl));
+}
+function isRanchoContainerCargo(c){
+  return isHorizontalPreferredCargo(c);
+}
+function getPreferredRotation(c){
+  if(!c) return false;
+  if(isHorizontalPreferredCargo(c)) return c.l < c.w;
+  return false;
+}
+
+// ── SNAP TO COAST ─────────────────────────────────────────────────
+// After placing a cargo, snap its Y so it hugs the nearest costado (BB=top, BE=bottom).
+// Scans all other placed cargas in the same "column" (overlapping X range) and stacks tightly.
+function snapToCoast(id, xM, yM, l, w){
+  const mid = yM + w/2;
+  const fromBB = mid <= CFG.W/2; // closer to top (BB) or bottom (BE)
+  const EPS = 0.01;
+
+  if(fromBB){
+    // Anchor to top (y=0), stack downward
+    // Find the lowest bottom edge of any placed cargo whose X range overlaps
+    let coastY = 0;
+    for(const [pid, pos] of Object.entries(placed)){
+      if(pid === id) continue;
+      const pc = CARGOS.find(c=>c.id===pid); if(!pc) continue;
+      const {l:pl, w:pw} = effDims(pc, pos.rotated);
+      // Check X overlap
+      if(pos.x + pl - EPS > xM && pos.x + EPS < xM + l){
+        // Only consider cargas on the BB half
+        if(pos.y + pw/2 <= CFG.W/2){
+          coastY = Math.max(coastY, pos.y + pw);
+        }
+      }
+    }
+    return parseFloat(Math.max(0, Math.min(coastY, CFG.W - w)).toFixed(3));
+  } else {
+    // Anchor to bottom (y=CFG.W-w), stack upward
+    let coastY = CFG.W;
+    for(const [pid, pos] of Object.entries(placed)){
+      if(pid === id) continue;
+      const pc = CARGOS.find(c=>c.id===pid); if(!pc) continue;
+      const {l:pl, w:pw} = effDims(pc, pos.rotated);
+      if(pos.x + pl - EPS > xM && pos.x + EPS < xM + l){
+        if(pos.y + pw/2 > CFG.W/2){
+          coastY = Math.min(coastY, pos.y);
+        }
+      }
+    }
+    return parseFloat(Math.max(0, Math.min(coastY - w, CFG.W - w)).toFixed(3));
+  }
+}
+
+function renderDeckCargo(c,pos){
+  const{sx,sy}=computeScale(); const{l,w}=effDims(c,pos.rotated);
+  const col=getColor(c.dest); const lbl=getLabel(c.dest);
+  const clip=document.getElementById('deckClip');
+  const el=document.createElement('div'); el.className='dc'; el.dataset.id=c.id;
+  const pw=l*sx, ph=w*sy; // pixel size
+  el.style.left=(pos.x*sx)+'px'; el.style.top=(pos.y*sy)+'px';
+  el.style.width=pw+'px'; el.style.height=ph+'px';
+  el.style.background=col.bg; el.style.borderColor=col.hex;
+  const tc=darkMode?'rgba(220,232,245,.85)':'rgba(15,35,65,.85)';
+
+  // Adaptive content based on available pixel space
+  const tiny = pw<38 || ph<28;   // very small: just color + buttons
+  const small = pw<70 || ph<42;  // small: label only
+
+  if(tiny){
+    el.innerHTML=`
+      <div class="dc-del" onclick="removeCargo('${c.id}',event)" style="font-size:8px;width:12px;height:12px;top:1px;right:1px;">✕</div>
+      <div class="dc-rot" onclick="rotateCargo('${c.id}',event)" style="font-size:8px;width:12px;height:12px;top:1px;left:1px;">↺</div>`;
+  } else if(small){
+    el.innerHTML=`
+      <div class="dc-del" onclick="removeCargo('${c.id}',event)">✕</div>
+      <div class="dc-rot" onclick="rotateCargo('${c.id}',event)">↺</div>
+      <div style="pointer-events:none;display:flex;align-items:center;justify-content:center;width:100%;height:100%;overflow:hidden;padding:2px 4px;">
+        <span class="dcl" style="color:${col.hex};font-size:9px">${lbl}</span>
+      </div>`;
+  } else {
+    el.innerHTML=`
+      <div class="dc-del" onclick="removeCargo('${c.id}',event)">✕</div>
+      <div class="dc-rot" onclick="rotateCargo('${c.id}',event)">↺</div>
+      <div style="pointer-events:none;display:flex;align-items:center;justify-content:center;width:100%;height:100%;overflow:hidden;padding:4px 6px;">
+        <span class="dcl" style="color:${col.hex};font-size:${pw>120 && ph>50 ? '11px' : '9px'}">${lbl}</span>
+      </div>`;
+  }
+  el.addEventListener('mousedown',onDeckMouseDown);
+  if(selectedIds.has(c.id)) el.classList.add('selected');
+  el.addEventListener('mouseenter',e=>showTT(e,c,pos.rotated));
+  el.addEventListener('mouseleave',hideTT);
+  clip.appendChild(el);
+}
+
+// ── DRAG GHOST ───────────────────────────────────────────────────
+function startSidebarDrag(e,c){
+  ghostId=c.id; ghostRotated=getPreferredRotation(c); ghostActive=true;
+  const img=new Image(); img.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  e.dataTransfer.setDragImage(img,0,0);
+  e.dataTransfer.effectAllowed='copy'; e.dataTransfer.setData('text/plain',c.id);
+  setTimeout(()=>e.currentTarget.style.opacity='0.35',0);
+  updateGhost(c,e.clientX,e.clientY);
+}
+function updateGhost(c,cx,cy){
+  const ghost=document.getElementById('dragGhost');
+  const{sx,sy}=computeScale(); const{l,w}=effDims(c,ghostRotated);
+  const col=getColor(c.dest); const lbl=getLabel(c.dest);
+  ghost.style.display='flex';
+  ghost.style.width=(l*sx)+'px'; ghost.style.height=(w*sy)+'px';
+  ghost.style.left=(cx-l*sx/2)+'px'; ghost.style.top=(cy-w*sy/2)+'px';
+  ghost.style.background=col.bg; ghost.style.borderColor=col.hex; ghost.style.color=col.hex;
+  document.getElementById('ghostLabel').textContent=`${lbl}  ${l}×${w}m`;
+  document.getElementById('ghostSub').textContent=`${(c.kg/1000).toFixed(1)} t`;
+}
+function hideGhost(){document.getElementById('dragGhost').style.display='none';ghostId=null;ghostRotated=false;ghostActive=false;}
+document.addEventListener('dragover',e=>{if(ghostActive&&ghostId){const c=CARGOS.find(x=>x.id===ghostId);if(c) updateGhost(c,e.clientX,e.clientY);}});
+document.addEventListener('dragend',()=>hideGhost());
+
+// ── MULTI-ZONE SYSTEM ─────────────────────────────────────────────
+// zones: array of {id, x,y,w,h, destKey, placedIds:Set}
+let zones=[];
+let zoneSeq=0;
+let drawMode=false, drawing=false, drawStart={x:0,y:0};
+// Which zone is being interacted with
+let activeZoneId=null; // id of zone being resized/moved
+let resizing=false, resizeHandle='', resizeStartMouse={x:0,y:0}, resizeStartZone=null;
+let movingZone=false, moveZoneStart={x:0,y:0}, moveZoneOrigin=null;
+
+function getAreaMaxIlha(){ return Math.max(0.1, Number(CFG.areaMaxIlha)||9.4); }
+function getEspacoMinIlhas(){ return Math.max(0, Number(CFG.espacoMinIlhas)||0); }
+
+function toggleDrawMode(){
+  if(CARGOS.length===0){setLog('⚠ Carregue um manifesto primeiro');return;}
+  drawMode=!drawMode;
+  const btn=document.getElementById('btnDraw');
+  btn.classList.toggle('active',drawMode);
+  btn.textContent=drawMode?'✕ Parar':'⬛ Nova Área';
+  document.getElementById('deck').style.cursor=drawMode?'crosshair':'default';
+  setLog(drawMode?'🖱 Clique e arraste para criar zonas. Clique ✕ em cada zona para apagar.':'');
+}
+
+// ── ZONE RENDERING ───────────────────────────────────────────────
+function renderAllZones(){
+  // Remove old zone elements
+  document.getElementById('deck').querySelectorAll('.zone-el').forEach(e=>e.remove());
+  zones.forEach(z=>renderOneZone(z));
+}
+
+function zoneEl(z){return document.getElementById('zone-'+z.id);}
+
+function renderOneZone(z){
+  // Remove old if exists
+  const old=document.getElementById('zone-'+z.id);
+  if(old) old.remove();
+
+  const{sx,sy}=computeScale();
+  const col=z.destKey&&DEST_MAP[z.destKey]?DEST_MAP[z.destKey].color.hex:'#b07af5';
+  const bg=z.destKey&&DEST_MAP[z.destKey]?DEST_MAP[z.destKey].color.bg:'rgba(180,120,255,.06)';
+
+  const el=document.createElement('div');
+  el.className='zone-el'; el.id='zone-'+z.id;
+  el.style.cssText=`position:absolute;border:2px dashed ${col};background:${bg};
+    left:${z.x*sx}px;top:${z.y*sy}px;width:${z.w*sx}px;height:${z.h*sy}px;
+    z-index:200;box-sizing:border-box;border-radius:3px;`;
+
+  // Sort by total manifest area descending (same order as bottom bar)
+  const mStats=manifestStatsByDest();
+  const destOpts=Object.entries(DEST_MAP)
+    .sort((a,b)=>(mStats[b[0]]?.area||0)-(mStats[a[0]]?.area||0))
+    .map(([k,v])=>{
+      const totalForDest=CARGOS.filter(c=>c.dest===k).length;
+      const globalPlaced=Object.keys(placed).filter(id=>{ const c=CARGOS.find(x=>x.id===id); return c&&c.dest===k; }).length;
+      const allShipped=totalForDest>0&&globalPlaced>=totalForDest;
+      const active=z.destKey===k;
+      // Hide if all shipped and not currently active on this zone
+      if(allShipped&&!active) return '';
+      const avail=CARGOS.filter(c=>c.dest===k&&(!placed[c.id]||z.placedIds.has(c.id))).length;
+      return `<span class="zo-dest" data-key="${k}" data-zid="${z.id}"
+        style="${active?`background:${v.color.bg};border:1.5px solid ${v.color.hex};font-weight:900;`:''}color:${v.color.hex}">
+        ${v.label} <span style="opacity:.6;font-size:9px">${avail}</span></span>`;
+    }).join('');
+
+  el.innerHTML=`
+    <div class="zo-bar" data-zid="${z.id}">
+      <span class="zo-dim">${z.w.toFixed(1)}×${z.h.toFixed(1)}m</span>
+      <div class="zo-dests">${destOpts}</div>
+      <span class="zo-lock" data-zid="${z.id}" title="Confirmar e liberar cargas para ajuste livre">✓ OK</span>
+      <span class="zo-close" data-zid="${z.id}" title="Apagar zona e cargas">✕</span>
+    </div>
+    <div class="zo-handle zo-nw" data-h="nw" data-zid="${z.id}"></div>
+    <div class="zo-handle zo-ne" data-h="ne" data-zid="${z.id}"></div>
+    <div class="zo-handle zo-sw" data-h="sw" data-zid="${z.id}"></div>
+    <div class="zo-handle zo-se" data-h="se" data-zid="${z.id}"></div>
+    <div class="zo-handle zo-n"  data-h="n"  data-zid="${z.id}"></div>
+    <div class="zo-handle zo-s"  data-h="s"  data-zid="${z.id}"></div>
+    <div class="zo-handle zo-w"  data-h="w"  data-zid="${z.id}"></div>
+    <div class="zo-handle zo-e"  data-h="e"  data-zid="${z.id}"></div>`;
+
+  // Dest click
+  el.querySelectorAll('.zo-dest').forEach(d=>{
+    d.onclick=e=>{
+      e.stopPropagation();
+      const zid=parseInt(d.dataset.zid);
+      const zone=zones.find(z=>z.id===zid); if(!zone) return;
+      zone.destKey=d.dataset.key;
+      repackOneZone(zone);
+      renderOneZone(zone);
+    };
+  });
+
+  // Lock (keep cargo, remove overlay)
+  el.querySelector('.zo-lock').addEventListener('click',e=>{
+    e.stopPropagation();
+    lockZone(parseInt(e.target.dataset.zid));
+  });
+
+  // Close (remove cargo + overlay)
+  el.querySelector('.zo-close').addEventListener('click',e=>{
+    e.stopPropagation();
+    cancelZone(parseInt(e.target.dataset.zid));
+  });
+
+  // Handle resize
+  el.querySelectorAll('.zo-handle').forEach(h=>{
+    h.addEventListener('mousedown',e=>{
+      e.stopPropagation(); e.preventDefault();
+      activeZoneId=parseInt(h.dataset.zid);
+      resizing=true; resizeHandle=h.dataset.h;
+      resizeStartMouse={x:e.clientX,y:e.clientY};
+      const zone=zones.find(z=>z.id===activeZoneId);
+      resizeStartZone=zone?{...zone}:null;
+    });
+  });
+
+  // Bar drag (move)
+  el.querySelector('.zo-bar').addEventListener('mousedown',e=>{
+    if(e.target.classList.contains('zo-dest')||e.target.classList.contains('zo-close')) return;
+    e.stopPropagation(); e.preventDefault();
+    activeZoneId=parseInt(e.currentTarget.dataset.zid);
+    movingZone=true;
+    moveZoneStart={x:e.clientX,y:e.clientY};
+    const zone=zones.find(z=>z.id===activeZoneId);
+    moveZoneOrigin=zone?{...zone}:null;
+  });
+
+  document.getElementById('deck').appendChild(el);
+}
+
+function lockZone(zid){
+  // Remove overlay, keep all placed cargo intact and fully free to move
+  const el=document.getElementById('zone-'+zid); if(el) el.remove();
+  zones=zones.filter(z=>z.id!==zid);
+  if(zones.length===0){
+    document.getElementById('btnDraw').classList.remove('active');
+    document.getElementById('btnDraw').textContent='⬛ Nova Área';
+    drawMode=false;
+    document.getElementById('deck').style.cursor='default';
+  }
+  buildSidebar(); buildDeck();
+  setLog('✓ Cargas liberadas — arraste para ajuste fino.');
+}
+
+function cancelZone(zid){
+  const zone=zones.find(z=>z.id===zid); if(!zone) return;
+  zone.placedIds.forEach(id=>delete placed[id]);
+  zones=zones.filter(z=>z.id!==zid);
+  const el=document.getElementById('zone-'+zid); if(el) el.remove();
+  // Update button
+  if(zones.length===0){
+    document.getElementById('btnDraw').classList.remove('active');
+    document.getElementById('btnDraw').textContent='⬛ Nova Área';
+  }
+  buildSidebar(); buildDeck();
+}
+
+// ── 2D BIN PACKING ────────────────────────────────────────────────
+function packZone(zone, items){
+  const EPS=0.01;
+  const {x:zX, y:zY, w:zW, h:zH}=zone;
+  const maxIslandW = Math.max(0.5, getAreaMaxIlha());
+  const islandGap = Math.max(0, getEspacoMinIlhas());
+  const zoneMid = zY + zH/2;
+  const fromBottom = zoneMid > CFG.W/2;
+
+  function rectContains(a,b){
+    return b.x >= a.x-EPS && b.y >= a.y-EPS && b.x+b.w <= a.x+a.w+EPS && b.y+b.h <= a.y+a.h+EPS;
+  }
+
+  function pruneRects(rects){
+    const out=[];
+    for(let i=0;i<rects.length;i++){
+      let contained=false;
+      for(let j=0;j<rects.length;j++){
+        if(i===j) continue;
+        if(rectContains(rects[j], rects[i])){ contained=true; break; }
+      }
+      if(!contained && rects[i].w>EPS && rects[i].h>EPS){
+        out.push({
+          x:parseFloat(rects[i].x.toFixed(3)),
+          y:parseFloat(rects[i].y.toFixed(3)),
+          w:parseFloat(rects[i].w.toFixed(3)),
+          h:parseFloat(rects[i].h.toFixed(3))
+        });
+      }
+    }
+    return out;
+  }
+
+  function splitRects(freeRects, used){
+    const next=[];
+    for(const fr of freeRects){
+      const overlap = !(used.x >= fr.x+fr.w-EPS || used.x+used.w <= fr.x+EPS || used.y >= fr.y+fr.h-EPS || used.y+used.h <= fr.y+EPS);
+      if(!overlap){
+        next.push(fr);
+        continue;
+      }
+      const frRight = fr.x + fr.w;
+      const frBottom = fr.y + fr.h;
+      const usedRight = used.x + used.w;
+      const usedBottom = used.y + used.h;
+
+      if(used.x > fr.x + EPS){
+        next.push({x:fr.x, y:fr.y, w:used.x-fr.x, h:fr.h});
+      }
+      if(usedRight < frRight - EPS){
+        next.push({x:usedRight, y:fr.y, w:frRight-usedRight, h:fr.h});
+      }
+      if(used.y > fr.y + EPS){
+        next.push({x:fr.x, y:fr.y, w:fr.w, h:used.y-fr.y});
+      }
+      if(usedBottom < frBottom - EPS){
+        next.push({x:fr.x, y:usedBottom, w:fr.w, h:frBottom-usedBottom});
+      }
+    }
+    return pruneRects(next);
+  }
+
+  function overlap1D(a1,a2,b1,b2){
+    return !(a2 <= b1 + EPS || b2 <= a1 + EPS);
+  }
+
+  function makeDynamicColumns(){
+    const cols=[];
+    const maxCols = Math.max(1, Math.floor((zW + islandGap) / (Math.max(0.5, Math.min(maxIslandW, zW)) + islandGap)) + 2);
+    let x=0;
+    for(let i=0;i<maxCols && x < zW - EPS;i++){
+      const w = Math.min(maxIslandW, zW - x);
+      cols.push({x:parseFloat(x.toFixed(3)), w:parseFloat(w.toFixed(3))});
+      x += w + islandGap;
+    }
+    return cols;
+  }
+
+  function makeState(columns){
+    return {
+      columns,
+      freeRects: columns.map((c,idx)=>({x:c.x, y:0, w:c.w, h:zH, colIdx:idx})),
+      placements: {},
+      unplaced: []
+    };
+  }
+
+  function scorePlacement(item, rect, ori, state){
+    const leftoverW = rect.w - ori.il;
+    const leftoverH = rect.h - ori.ih;
+    const shortSide = Math.min(leftoverW, leftoverH);
+    const longSide = Math.max(leftoverW, leftoverH);
+    const areaWaste = rect.w*rect.h - ori.il*ori.ih;
+    const itemArea = item.l * item.w;
+    const zoneArea = Math.max(EPS, zW * zH);
+    const sizeFactor = Math.max(0.2, itemArea / zoneArea);
+
+    // Prefer larger cargos further aft (popa = smaller X / more to the left)
+    const sternBias = rect.x * (1 + sizeFactor * 10);
+
+    // Keep cargos hugging the costado within the area
+    const yBias = rect.y;
+
+    // Try to keep rancho containers close to other rancho containers
+    let ranchoPenalty = 0;
+    if(isRanchoContainerCargo(item)){
+      const placedRancho = Object.entries(state.placements)
+        .map(([id,p]) => ({id, p, cargo: CARGOS.find(c => c.id === id)}))
+        .filter(x => x.cargo && isRanchoContainerCargo(x.cargo));
+      if(placedRancho.length){
+        const targetCx = rect.x + ori.il/2;
+        const targetCy = rect.y + ori.ih/2;
+        const nearest = placedRancho.reduce((best,cur)=>{
+          const cx = cur.p.x + cur.p.w/2;
+          const cy = cur.p.py + cur.p.h/2;
+          const d = Math.hypot(targetCx-cx, targetCy-cy);
+          return d < best ? d : best;
+        }, Infinity);
+        ranchoPenalty = nearest;
+      } else {
+        // First rancho should also prefer the stern side so the block starts there
+        ranchoPenalty = rect.x * 0.5;
+      }
+    }
+
+    return [
+      parseFloat(areaWaste.toFixed(4)),
+      parseFloat(shortSide.toFixed(4)),
+      parseFloat(longSide.toFixed(4)),
+      parseFloat(ranchoPenalty.toFixed(4)),
+      parseFloat(yBias.toFixed(4)),
+      parseFloat(sternBias.toFixed(4))
+    ];
+  }
+
+  function compareScore(a,b){
+    for(let i=0;i<a.length;i++){
+      if(Math.abs(a[i]-b[i])>EPS) return a[i]-b[i];
+    }
+    return 0;
+  }
+
+  function tryPack(sortedItems){
+    const columns = makeDynamicColumns();
+    const state = makeState(columns);
+
+    for(const item of sortedItems){
+      const preferredRot = getPreferredRotation(item);
+      const lockHorizontal = isHorizontalPreferredCargo(item);
+      const oris = lockHorizontal
+        ? [{il:preferredRot ? item.w : item.l, ih:preferredRot ? item.l : item.w, rot:preferredRot}]
+        : [
+            {il:item.l, ih:item.w, rot:false},
+            {il:item.w, ih:item.l, rot:true}
+          ];
+
+      let best=null;
+      for(const ori of oris){
+        if(ori.il > maxIslandW + EPS || ori.ih > zH + EPS) continue;
+        for(const rect of state.freeRects){
+          if(ori.il <= rect.w + EPS && ori.ih <= rect.h + EPS){
+            const score = scorePlacement(item, rect, ori, state);
+            if(!best || compareScore(score, best.score) < 0){
+              best = {rect, ori, score};
+            }
+          }
+        }
+      }
+
+      if(!best){
+        state.unplaced.push(item);
+        continue;
+      }
+
+      const used = {
+        x:best.rect.x,
+        y:best.rect.y,
+        w:best.ori.il,
+        h:best.ori.ih
+      };
+
+      state.placements[item.id] = {
+        x:parseFloat(used.x.toFixed(3)),
+        py:parseFloat(used.y.toFixed(3)),
+        w:parseFloat(used.w.toFixed(3)),
+        h:parseFloat(used.h.toFixed(3)),
+        rotated:best.ori.rot,
+        colIdx:best.rect.colIdx
+      };
+
+      state.freeRects = splitRects(state.freeRects, used).map(fr=>{
+        let colIdx = state.columns.findIndex(c => fr.x >= c.x - EPS && fr.x < c.x + c.w + EPS);
+        return {...fr, colIdx};
+      });
+      state.freeRects.sort((a,b)=>{
+        if(Math.abs(a.x-b.x)>EPS) return a.x-b.x;
+        if(Math.abs(a.y-b.y)>EPS) return a.y-b.y;
+        return (a.w*a.h)-(b.w*b.h);
+      });
+    }
+
+    return state;
+  }
+
+  function normalizeColumns(state){
+    const groups = new Map();
+    for(const [id,p] of Object.entries(state.placements)){
+      if(!groups.has(p.colIdx)) groups.set(p.colIdx, []);
+      groups.get(p.colIdx).push({id, ...p});
+    }
+    const orderedCols = [...groups.keys()].sort((a,b)=>a-b);
+    let nextX = 0;
+    for(const colIdx of orderedCols){
+      const arr = groups.get(colIdx);
+
+      for(let iter=0; iter<4; iter++){
+        arr.sort((a,b)=>a.x-b.x || a.py-b.py);
+        for(const cur of arr){
+          let minX = 0;
+          for(const other of arr){
+            if(other.id===cur.id) continue;
+            if(overlap1D(cur.py, cur.py+cur.h, other.py, other.py+other.h)){
+              if(other.x + other.w <= cur.x + EPS){
+                minX = Math.max(minX, other.x + other.w);
+              }
+            }
+          }
+          cur.x = parseFloat(Math.max(0, minX).toFixed(3));
+        }
+
+        arr.sort((a,b)=>a.py-b.py || a.x-b.x);
+        for(const cur of arr){
+          let minY = 0;
+          for(const other of arr){
+            if(other.id===cur.id) continue;
+            if(overlap1D(cur.x, cur.x+cur.w, other.x, other.x+other.w)){
+              if(other.py + other.h <= cur.py + EPS){
+                minY = Math.max(minY, other.py + other.h);
+              }
+            }
+          }
+          cur.py = parseFloat(Math.max(0, minY).toFixed(3));
+        }
+      }
+
+      const minLocalX = Math.min(...arr.map(p=>p.x));
+      if(minLocalX > EPS){
+        for(const p of arr){
+          p.x = parseFloat((p.x - minLocalX).toFixed(3));
+        }
+      }
+      const usedWidth = arr.reduce((m,p)=>Math.max(m, p.x + p.w), 0);
+      for(const p of arr){
+        p.x = parseFloat((nextX + p.x).toFixed(3));
+        state.placements[p.id] = {...state.placements[p.id], x:p.x, py:p.py};
+      }
+      nextX += usedWidth + islandGap;
+    }
+  }
+
+  function stateScore(state){
+    const placed = Object.values(state.placements);
+    const unplacedArea = state.unplaced.reduce((s,it)=>s+(it.l*it.w),0);
+    if(!placed.length) return [1e9 + unplacedArea, 1e9, 1e9];
+    const maxRight = Math.max(...placed.map(p=>p.x+p.w));
+    const minLeft = Math.min(...placed.map(p=>p.x));
+    const widthUsed = maxRight - minLeft;
+    const heightUsed = Math.max(...placed.map(p=>p.py+p.h));
+    return [unplacedArea, widthUsed, heightUsed];
+  }
+
+  function compareStateScore(a,b){
+    for(let i=0;i<a.length;i++){
+      if(Math.abs(a[i]-b[i])>EPS) return a[i]-b[i];
+    }
+    return 0;
+  }
+
+  if(zW <= EPS || zH <= EPS) return {};
+
+  const variants = [
+    [...items].sort((a,b)=>{
+      const aRancho=isRanchoContainerCargo(a)?1:0, bRancho=isRanchoContainerCargo(b)?1:0;
+      if(aRancho!==bRancho) return bRancho-aRancho;
+      const aMax=Math.max(a.l,a.w), bMax=Math.max(b.l,b.w);
+      if(Math.abs(bMax-aMax)>0.05) return bMax-aMax;
+      return (b.l*b.w)-(a.l*a.w);
+    }),
+    [...items].sort((a,b)=>{
+      const aArea=a.l*a.w, bArea=b.l*b.w;
+      if(Math.abs(bArea-aArea)>0.05) return bArea-aArea;
+      const aRancho=isRanchoContainerCargo(a)?1:0, bRancho=isRanchoContainerCargo(b)?1:0;
+      if(aRancho!==bRancho) return bRancho-aRancho;
+      return Math.max(b.l,b.w)-Math.max(a.l,a.w);
+    }),
+    [...items].sort((a,b)=>{
+      const aRancho=isRanchoContainerCargo(a)?1:0, bRancho=isRanchoContainerCargo(b)?1:0;
+      if(aRancho!==bRancho) return bRancho-aRancho;
+      return b.w-a.w || b.l-a.l || (b.l*b.w)-(a.l*a.w);
+    }),
+    [...items].sort((a,b)=>{
+      const aRancho=isRanchoContainerCargo(a)?1:0, bRancho=isRanchoContainerCargo(b)?1:0;
+      if(aRancho!==bRancho) return bRancho-aRancho;
+      return b.l-a.l || b.w-a.w || (b.l*b.w)-(a.l*a.w);
+    }),
+    [...items].sort((a,b)=>{
+      const aRancho=isRanchoContainerCargo(a)?1:0, bRancho=isRanchoContainerCargo(b)?1:0;
+      if(aRancho!==bRancho) return bRancho-aRancho;
+      const da=Math.abs(a.l-a.w), db=Math.abs(b.l-b.w);
+      if(Math.abs(db-da)>0.05) return db-da;
+      return (b.l*b.w)-(a.l*a.w);
+    })
+  ];
+
+  let bestState=null;
+  let bestScore=null;
+  for(const variant of variants){
+    const state = tryPack(variant);
+    normalizeColumns(state);
+    const score = stateScore(state);
+    if(!bestState || compareStateScore(score, bestScore) < 0){
+      bestState = state;
+      bestScore = score;
+    }
+  }
+
+  const result={};
+  for(const [id,p] of Object.entries(bestState.placements)){
+    const y = fromBottom
+      ? parseFloat((zY + zH - (p.py + p.h)).toFixed(3))
+      : parseFloat((zY + p.py).toFixed(3));
+    result[id] = {x:parseFloat((zX + p.x).toFixed(3)), y, rotated:p.rotated};
+  }
+
+  return result;
+}
+
+
+
+
+
+function repackOneZone(zone){
+  if(!zone.destKey) return;
+  // Free previously packed by this zone
+  pushUndo();
+  zone.placedIds.forEach(id=>delete placed[id]);
+  zone.placedIds=new Set();
+  // Items available: not placed by any other zone and belong to this dest
+  const otherZonePlaced=new Set();
+  zones.forEach(z=>{if(z.id!==zone.id) z.placedIds.forEach(id=>otherZonePlaced.add(id));});
+  const items=CARGOS.filter(c=>c.dest===zone.destKey&&(!placed[c.id]||zone.placedIds.has(c.id))&&!otherZonePlaced.has(c.id));
+  const packed=packZone(zone,items);
+  Object.entries(packed).forEach(([id,pos])=>{placed[id]=pos; zone.placedIds.add(id);});
+  buildSidebar(); buildDeck();
+  setLog(`✓ ${zone.placedIds.size} cargas de ${getLabel(zone.destKey)} na zona ${zone.w.toFixed(1)}×${zone.h.toFixed(1)}m`);
+}
+
+// ── DRAW / RESIZE / MOVE EVENTS ───────────────────────────────────
+function setupDrawMode(){
+  const deck=document.getElementById('deck');
+  let drawingZone=null;
+
+  deck.addEventListener('mousedown',e=>{
+    // If clicking on an existing zone element (handle/bar/close) → don't start drawing
+    if(e.target.closest('.zone-el')) return;
+    if(!drawMode&&!e.shiftKey){clearSelection();}
+    if(!drawMode||e.button!==0) return;
+    if(e.target.classList.contains('dc')||e.target.closest('.dc')) return;
+    e.preventDefault(); e.stopPropagation();
+    drawing=true;
+    const{sx,sy}=computeScale(); const dRect=deck.getBoundingClientRect();
+    drawStart.x=Math.max(0,Math.min((e.clientX-dRect.left)/sx,CFG.L));
+    drawStart.y=Math.max(0,Math.min((e.clientY-dRect.top)/sy,CFG.W));
+    drawingZone={id:++zoneSeq, x:drawStart.x, y:drawStart.y, w:0.1, h:0.1, destKey:null, placedIds:new Set()};
+    zones.push(drawingZone);
+    renderOneZone(drawingZone);
+  });
+
+  document.addEventListener('mousemove',e=>{
+    const{sx,sy}=computeScale(); const dRect=deck.getBoundingClientRect();
+
+    if(drawing&&drawingZone){
+      const curX=Math.max(0,Math.min((e.clientX-dRect.left)/sx,CFG.L));
+      const curY=Math.max(0,Math.min((e.clientY-dRect.top)/sy,CFG.W));
+      drawingZone.x=parseFloat(Math.min(drawStart.x,curX).toFixed(2));
+      drawingZone.y=parseFloat(Math.min(drawStart.y,curY).toFixed(2));
+      drawingZone.w=parseFloat(Math.abs(curX-drawStart.x).toFixed(2));
+      drawingZone.h=parseFloat(Math.abs(curY-drawStart.y).toFixed(2));
+      renderOneZone(drawingZone); return;
+    }
+
+    if(resizing&&resizeStartZone&&activeZoneId!=null){
+      const zone=zones.find(z=>z.id===activeZoneId); if(!zone) return;
+      const dx=(e.clientX-resizeStartMouse.x)/sx;
+      const dy=(e.clientY-resizeStartMouse.y)/sy;
+      let{x,y,w,h}=resizeStartZone;
+      if(resizeHandle.includes('e')) w=Math.max(0.5,w+dx);
+      if(resizeHandle.includes('s')) h=Math.max(0.5,h+dy);
+      if(resizeHandle.includes('w')){const nw=Math.max(0.5,w-dx);x=x+(w-nw);w=nw;}
+      if(resizeHandle.includes('n')){const nh=Math.max(0.5,h-dy);y=y+(h-nh);h=nh;}
+      x=Math.max(0,x); y=Math.max(0,y);
+      w=Math.min(w,CFG.L-x); h=Math.min(h,CFG.W-y);
+      // Snap to coast: if n/s handle is dragged, keep the zone glued to costado
+      const mid = y + h/2;
+      if(mid <= CFG.W/2){ y=0; } else { h=CFG.W-y; }
+      zone.x=parseFloat(x.toFixed(2)); zone.y=parseFloat(y.toFixed(2));
+      zone.w=parseFloat(w.toFixed(2)); zone.h=parseFloat(h.toFixed(2));
+      renderOneZone(zone);
+      if(zone.destKey) repackOneZone(zone); else buildDeck();
+      return;
+    }
+
+    if(movingZone&&moveZoneOrigin&&activeZoneId!=null){
+      const zone=zones.find(z=>z.id===activeZoneId); if(!zone) return;
+      const dx=(e.clientX-moveZoneStart.x)/sx;
+      const dy=(e.clientY-moveZoneStart.y)/sy;
+      zone.x=parseFloat(Math.max(0,Math.min(moveZoneOrigin.x+dx,CFG.L-zone.w)).toFixed(2));
+      zone.y=parseFloat(Math.max(0,Math.min(moveZoneOrigin.y+dy,CFG.W-zone.h)).toFixed(2));
+      renderOneZone(zone);
+      if(zone.destKey) repackOneZone(zone); else buildDeck();
+    }
+  });
+
+  document.addEventListener('mouseup',e=>{
+    if(drawing){
+      drawing=false;
+      if(drawingZone&&(drawingZone.w<0.5||drawingZone.h<0.5)){
+        zones=zones.filter(z=>z.id!==drawingZone.id);
+        const el=document.getElementById('zone-'+drawingZone.id); if(el) el.remove();
+      } else if(drawingZone){
+        // Auto-stretch zone to nearest costado so cargas always anchor to the side
+        const mid = drawingZone.y + drawingZone.h/2;
+        if(mid <= CFG.W/2){
+          // Closer to BB (top) — stretch top edge to y=0
+          drawingZone.h = drawingZone.y + drawingZone.h;
+          drawingZone.y = 0;
+        } else {
+          // Closer to BE (bottom) — stretch bottom edge to CFG.W
+          drawingZone.h = CFG.W - drawingZone.y;
+        }
+        renderOneZone(drawingZone);
+        setLog(`✓ Zona ${drawingZone.w.toFixed(1)}×${drawingZone.h.toFixed(1)}m criada — escolha a unidade na barra da zona`);
+      }
+      drawingZone=null;
+      // Keep drawMode ON so user can draw more zones
+    }
+    if(resizing){resizing=false; resizeHandle=''; resizeStartZone=null; activeZoneId=null;}
+    if(movingZone){movingZone=false; moveZoneOrigin=null; activeZoneId=null;}
+  });
+}
+
+// ── DECK DROP ─────────────────────────────────────────────────────
+function setupDeckDrop(){
+  const deck=document.getElementById('deck');
+  deck.addEventListener('dragover',e=>{e.preventDefault();deck.style.boxShadow='0 0 0 2px var(--accent)';
+    if(ghostActive&&ghostId){const c=CARGOS.find(x=>x.id===ghostId);if(c) updateGhost(c,e.clientX,e.clientY);}});
+  deck.addEventListener('dragleave',e=>{if(!deck.contains(e.relatedTarget)) deck.style.boxShadow='';});
+  deck.addEventListener('drop',e=>{
+    e.preventDefault(); deck.style.boxShadow='';
+    const id=e.dataTransfer.getData('text/plain')||ghostId;
+    if(!id){hideGhost();return;}
+    const c=CARGOS.find(x=>x.id===id); if(!c){hideGhost();return;}
+    const{sx,sy}=computeScale(); const dRect=deck.getBoundingClientRect();
+    const{l,w}=effDims(c,ghostRotated);
+    let xM=(e.clientX-dRect.left)/sx-l/2, yM=(e.clientY-dRect.top)/sy-w/2;
+    xM=Math.max(0,Math.min(xM,CFG.L-l)); yM=Math.max(0,Math.min(yM,CFG.W-w));
+    if(hasCollision(id,xM,yM,l,w)){
+      const free=findFreeSpot(id,l,w);
+      if(free){xM=free.x;yM=free.y;}
+      else{hideGhost();setLog(`⚠ Sem espaço livre para ${c.desc}`);return;}
+    }
+    pushUndo();
+    placed[id]={x:parseFloat(xM.toFixed(2)),y:parseFloat(yM.toFixed(2)),rotated:ghostRotated};
+    hideGhost(); buildSidebar(); buildDeck();
+  });
+}
+
+// ── ROTATE ────────────────────────────────────────────────────────
+function rotateCargo(id,e){
+  if(e){e.stopPropagation();e.preventDefault();}
+  const pos=placed[id]; if(!pos) return;
+  const c=CARGOS.find(x=>x.id===id); if(!c) return;
+  if(isHorizontalPreferredCargo(c)){
+    setLog('ℹ Esta carga deve permanecer na horizontal (tomadas elétricas / container de rancho)');
+    return;
+  }
+  const newRot=!pos.rotated; const{l:nl,w:nw}=effDims(c,newRot);
+  let nx=Math.max(0,Math.min(pos.x,CFG.L-nl)), ny=Math.max(0,Math.min(pos.y,CFG.W-nw));
+  if(hasCollision(id,nx,ny,nl,nw)){const free=findFreeSpot(id,nl,nw);if(free){nx=free.x;ny=free.y;}else{setLog('⚠ Sem espaço para girar');return;}}
+  pushUndo();
+  placed[id]={x:parseFloat(nx.toFixed(2)),y:parseFloat(ny.toFixed(2)),rotated:newRot};
+  hideTT(); buildDeck();
+}
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();undo();return;}
+  if(e.key==='r'||e.key==='R'){
+    if(ghostActive&&ghostId){const c=CARGOS.find(x=>x.id===ghostId);if(c){if(isHorizontalPreferredCargo(c)){setLog('ℹ Esta carga deve permanecer na horizontal (tomadas elétricas / container de rancho)');return;}ghostRotated=!ghostRotated;const gh=document.getElementById('dragGhost');const r=gh.getBoundingClientRect();updateGhost(c,r.left+r.width/2,r.top+r.height/2);}return;}
+    if(hoveredId) rotateCargo(hoveredId,null);
+  }
+});
+
+// ── FREE MOVE + MULTI-SELECT ──────────────────────────────────────
+function onDeckMouseDown(e){
+  if(e.target.classList.contains('dc-del')||e.target.classList.contains('dc-rot')) return;
+  e.preventDefault(); e.stopPropagation();
+  const id=e.currentTarget.dataset.id;
+  if(e.shiftKey){
+    if(selectedIds.has(id)) selectedIds.delete(id);
+    else selectedIds.add(id);
+    e.currentTarget.classList.toggle('selected',selectedIds.has(id));
+    return;
+  }
+  if(!selectedIds.has(id)){clearSelection();selectedIds.add(id);e.currentTarget.classList.add('selected');}
+  moveEl=e.currentTarget; moveId=id;
+  moveSX=e.clientX; moveSY=e.clientY;
+  const dRect=document.getElementById('deck').getBoundingClientRect();
+  multiMoveOrigins={};
+  selectedIds.forEach(sid=>{const p=placed[sid];if(p) multiMoveOrigins[sid]={x:p.x,y:p.y};});
+  const eRect=moveEl.getBoundingClientRect();
+  moveOrigX=(eRect.left-dRect.left)/deckScale; moveOrigY=(eRect.top-dRect.top)/deckScale;
+  pushUndo();
+  moveEl.classList.add('moving'); moveEl.style.transition='none';
+  hoveredId=null; hideTT();
+  document.addEventListener('mousemove',onDeckMouseMove); document.addEventListener('mouseup',onDeckMouseUp);
+}
+function onDeckMouseMove(e){
+  if(!moveEl) return;
+  const{sx,sy}=computeScale();
+  const dx=(e.clientX-moveSX)/sx, dy=(e.clientY-moveSY)/sy;
+  selectedIds.forEach(sid=>{
+    const orig=multiMoveOrigins[sid]; if(!orig) return;
+    const ci=CARGOS.find(x=>x.id===sid); if(!ci) return;
+    const{l:li,w:wi}=effDims(ci,placed[sid]?.rotated);
+    const nx=Math.max(0,Math.min(orig.x+dx,CFG.L-li));
+    const ny=Math.max(0,Math.min(orig.y+dy,CFG.W-wi));
+    placed[sid]={...placed[sid],x:parseFloat(nx.toFixed(2)),y:parseFloat(ny.toFixed(2))};
+    const el=document.querySelector('.dc[data-id="'+sid+'"]');
+    if(el){el.style.left=(nx*sx)+'px';el.style.top=(ny*sy)+'px';}
+  });
+}
+function onDeckMouseUp(){
+  if(moveEl){moveEl.classList.remove('moving');moveEl.style.transition='';}
+  moveEl=null;moveId=null;multiMoveOrigins={};
+  document.removeEventListener('mousemove',onDeckMouseMove);document.removeEventListener('mouseup',onDeckMouseUp);
+  updateStats();
+}
+
+// ── REMOVE ────────────────────────────────────────────────────────
+function removeCargo(id,e){if(e){e.stopPropagation();e.preventDefault();}pushUndo();delete placed[id];hoveredId=null;hideTT();buildSidebar();buildDeck();}
+
+// ── TOOLTIP ───────────────────────────────────────────────────────
+function showTT(e,c,rotated){
+  hoveredId=c.id; const{l,w}=effDims(c,rotated); const col=getColor(c.dest);
+  const tt=document.getElementById('tt');
+  tt.innerHTML=`<div class="tt-dest" style="color:${col.hex}">${getLabel(c.dest)}</div>
+    <div class="tt-desc">${c.desc}</div>
+    <div class="tt-row">Dimensões: ${l} × ${w} m${rotated?' (girado)':''}</div>
+    <div class="tt-row">Peso: ${c.kg.toLocaleString('pt-BR')} kg</div>
+    <div class="tt-row" style="margin-top:3px;color:var(--muted);">↺ ou <b style="color:var(--text)">R</b> para girar</div>`;
+  tt.classList.add('show'); posTT(e);
+}
+function hideTT(){hoveredId=null;document.getElementById('tt').classList.remove('show');}
+function posTT(e){const tt=document.getElementById('tt');let x=e.clientX+14,y=e.clientY-10;if(x+235>window.innerWidth) x=e.clientX-240;tt.style.left=x+'px';tt.style.top=y+'px';}
+document.addEventListener('mousemove',e=>{if(document.getElementById('tt').classList.contains('show')) posTT(e);});
+
+function showPm2Tooltip(e){
+  const tt=document.getElementById('pm2Tooltip');
+  if(!pm2Meta||!pm2Meta.id){tt.classList.remove('show');return;}
+  tt.innerHTML=`<div class="tt-dest" style="color:${pm2Meta.color}">${pm2Meta.unit}</div>
+    <div class="tt-desc">${pm2Meta.desc}</div>
+    <div class="tt-row">Peso: ${(pm2Meta.kg/1000).toFixed(2)} t</div>
+    <div class="tt-row">Dimensões: ${pm2Meta.l} × ${pm2Meta.w} m</div>
+    <div class="tt-row">Concentração: ${pm2Meta.pm2.toFixed(2)} t/m²</div>
+    <div class="tt-row">Limite do convés: ${pm2Meta.limit.toFixed(2)} t/m²</div>
+    <div class="tt-row" style="margin-top:3px;color:var(--muted);">Clique para destacar essa carga no plano</div>`;
+  tt.classList.add('show');
+  posPm2Tooltip(e);
+}
+function hidePm2Tooltip(){document.getElementById('pm2Tooltip').classList.remove('show');}
+function posPm2Tooltip(e){
+  const tt=document.getElementById('pm2Tooltip');
+  let x=e.clientX+14,y=e.clientY+12;
+  if(x+260>window.innerWidth) x=e.clientX-270;
+  if(y+140>window.innerHeight) y=e.clientY-120;
+  tt.style.left=x+'px'; tt.style.top=y+'px';
+}
+function focusCargoFromPm2(){
+  if(!pm2Meta||!pm2Meta.id){setLog('⚠ Nenhuma carga embarcada para destacar');return;}
+  const id=pm2Meta.id;
+  const el=document.querySelector('.dc[data-id="'+id+'"]');
+  const cargo=CARGOS.find(x=>x.id===id);
+  if(!el||!cargo){setLog('⚠ Carga de maior t/m² não está no convés');return;}
+  clearSelection();
+  selectedIds.add(id);
+  el.classList.add('selected','focused-cargo');
+  el.scrollIntoView({block:'center',inline:'center',behavior:'smooth'});
+  setTimeout(()=>el.classList.remove('focused-cargo'),4800);
+  setLog(`🎯 Destaque no plano: ${cargo.desc} · ${getLabel(cargo.dest)} · ${pm2Meta.pm2.toFixed(2)} t/m²`);
+}
+
+// ── STATS ─────────────────────────────────────────────────────────
+function updateStats(){
+  let totalKg=0,totalArea=0;
+  for(const[id,pos]of Object.entries(placed)){
+    const c=CARGOS.find(x=>x.id===id); if(!c) continue;
+    const{l,w}=effDims(c,pos.rotated); totalKg+=c.kg; totalArea+=l*w;
+  }
+  const pct=(totalArea/(CFG.L*CFG.W)*100).toFixed(1);
+  document.getElementById('hPct').textContent=pct+'%';
+  document.getElementById('hPeso').textContent=(totalKg/1000).toFixed(1)+' t';
+  document.getElementById('hN').textContent=Object.keys(placed).length;
+  document.getElementById('sArea').textContent=totalArea.toFixed(1)+' m²';
+  let _pm2=0, _pm2cargo=null;
+  for(const[id,pos]of Object.entries(placed)){
+    const c=CARGOS.find(x=>x.id===id); if(!c) continue;
+    const{l,w}=effDims(c,pos.rotated);
+    const pm2=(c.kg/1000)/(l*w);
+    if(pm2>_pm2){_pm2=pm2; _pm2cargo={id:c.id,desc:c.desc,unit:getLabel(c.dest),kg:c.kg,l,w,pm2,color:getColor(c.dest).hex};}
+  }
+  const _lim=CFG.pesoM2||5;
+  pm2Meta=_pm2cargo?{..._pm2cargo,limit:_lim}:null;
+  const _el=document.getElementById('hPesoM2');
+  const _box=document.getElementById('hsPesoM2');
+  const _tip=_pm2cargo?('Carga: '+_pm2cargo.desc+'\nUnidade: '+_pm2cargo.unit+'\n'+(_pm2cargo.kg/1000).toFixed(2)+'t / '+_pm2cargo.l+'×'+_pm2cargo.w+'m = '+_pm2.toFixed(2)+' t/m²\n'+(_pm2>_lim?'⚠ EXCEDE LIMITE ('+_lim+' t/m²)':'Limite: '+_lim+' t/m²')+'\nClique para destacar no plano'):'Limite: '+_lim+' t/m²';
+  if(_el){
+    _el.textContent=_pm2.toFixed(2)+' t/m²';
+    const _ov=_pm2>_lim;
+    _el.style.color=_ov?'#ff4444':(_pm2>_lim*0.9?'#f5a623':'');
+    _box.title=_tip;
+    _box.classList.toggle('pm2-active',!!pm2Meta);
+  }
+  if(CARGOS.length>0) buildIbar();
+}
+
+// ── CONFIG ────────────────────────────────────────────────────────
+let pendingBaiaDir='fwd';
+function selectBaiaDir(dir){pendingBaiaDir=dir;document.getElementById('radioFwd').classList.toggle('selected',dir==='fwd');document.getElementById('radioAft').classList.toggle('selected',dir==='aft');}
+function openCfg(){document.getElementById('cfgLen').value=CFG.L;document.getElementById('cfgWid').value=CFG.W;document.getElementById('cfgBaias').value=CFG.N;document.getElementById('cfgPesoM2').value=CFG.pesoM2||5;document.getElementById('cfgAreaMaxIlha').value=CFG.areaMaxIlha||9.4;document.getElementById('cfgEspacoMinIlhas').value=(CFG.espacoMinIlhas ?? 1);pendingBaiaDir=CFG.baiaDir;selectBaiaDir(CFG.baiaDir);document.getElementById('cfgModal').classList.remove('hidden');}
+function closeCfg(){document.getElementById('cfgModal').classList.add('hidden');}
+function applyCfg(){
+  const L=parseFloat(document.getElementById('cfgLen').value);
+  const W=parseFloat(document.getElementById('cfgWid').value);
+  const N=parseInt(document.getElementById('cfgBaias').value);
+  const pesoM2=parseFloat(document.getElementById('cfgPesoM2').value)||5;
+  const areaMaxIlha=parseFloat(document.getElementById('cfgAreaMaxIlha').value)||9.4;
+  const espacoMinIlhas=parseFloat(document.getElementById('cfgEspacoMinIlhas').value);
+  if(isNaN(L)||L<5||isNaN(W)||W<2||isNaN(N)||N<1||isNaN(areaMaxIlha)||areaMaxIlha<=0||isNaN(espacoMinIlhas)||espacoMinIlhas<0) return;
+  CFG={L,W,N,baiaDir:pendingBaiaDir,pesoM2,areaMaxIlha,espacoMinIlhas};
+  const bm=(L/N).toFixed(2);
+  const deckDescEl=document.getElementById('deckDesc');
+  if(deckDescEl) deckDescEl.textContent=`CONVÉS PRINCIPAL · ${L} m × ${W} m · ${N} BAIAS`;
+  document.getElementById('deckTitle').textContent=`CONVÉS PRINCIPAL — ${L} m × ${W} m — ${N} BAIAS DE ${bm} m`;
+  document.getElementById('sDeckArea').textContent=(L*W).toFixed(1)+' m²';
+  placed={}; closeCfg(); buildSidebar(); buildDeck();
+  setLog(`Convés: ${L}m × ${W}m, ${N} baias | Ilha máx.: ${areaMaxIlha}m | Espaço mín.: ${espacoMinIlhas}m | Baia 1 = ${pendingBaiaDir==='fwd'?'Vante/Proa (direita)':'Ré/Popa (esquerda)'}`)
+}
+
+// ── PDF EXPORT ────────────────────────────────────────────────────
+function openExport(){
+  // Set today's date
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('expData').value=today;
+  document.getElementById('exportModal').classList.remove('hidden');
+}
+function closeExport(){document.getElementById('exportModal').classList.add('hidden');}
+
+function generatePDF(){
+
+  const nomeDoNavio = (document.getElementById('expNavio')?.value || 'Navio Nao Identificado').trim() || 'Navio Nao Identificado';
+
+  gtag('event', 'gerar_pdf_plano', {
+    'button_name': 'Gerar PDF',
+    'tipo': 'plano_carga',
+    'nome_da_embarcacao': nomeDoNavio,
+    'file_name': 'plano_' + nomeDoNavio.replace(/\s+/g, '_').toLowerCase()
+  });
+
+  try {
+  const atend=document.getElementById('expAtend').value||'—';
+  const navio=document.getElementById('expNavio').value||'—';
+  const dataStr=document.getElementById('expData').value||'—';
+  const dateFmt=dataStr!=='—'?new Date(dataStr+'T12:00:00').toLocaleDateString('pt-BR'):'—';
+
+  // Render deck to canvas for snapshot
+  const{dw,dh,sx,sy}=computeScale();
+
+  // Create an offscreen canvas with the full deck
+  const canvas=document.createElement('canvas');
+  const scale=2; // retina
+  canvas.width=dw*scale; canvas.height=dh*scale;
+  const ctx=canvas.getContext('2d');
+  ctx.scale(scale,scale);
+
+  // Background — always white for print
+  ctx.fillStyle='#ffffff';
+  ctx.fillRect(0,0,dw,dh);
+
+  // Draw grid onto this canvas
+  drawGridOnCtx(ctx,dw,dh,sx,sy);
+
+  // Draw placed cargos
+  for(const[id,pos]of Object.entries(placed)){
+    const c=CARGOS.find(x=>x.id===id); if(!c) continue;
+    const{l,w}=effDims(c,pos.rotated);
+    const col=getColor(c.dest); const lbl=getLabel(c.dest);
+    const px=pos.x*sx, py=pos.y*sy, pw=l*sx, ph=w*sy;
+
+    // Fill
+    ctx.globalAlpha=0.85;
+    ctx.fillStyle=col.bg.replace('.18)','.35)');
+    ctx.fillRect(px,py,pw,ph);
+    ctx.globalAlpha=1;
+    // Border
+    ctx.strokeStyle=col.hex; ctx.lineWidth=1.5;
+    ctx.strokeRect(px+0.75,py+0.75,pw-1.5,ph-1.5);
+    // Label
+    ctx.fillStyle=col.hex;
+    const lbfs=Math.max(6,Math.min(10,Math.min(pw,ph)*0.2))|0;
+    ctx.font=`900 ${lbfs}px Barlow Condensed,sans-serif`;
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(lbl,px+pw/2,py+ph/2-lbfs*0.6);
+    ctx.textBaseline='alphabetic';
+  }
+
+  const deckImg=canvas.toDataURL('image/png',0.95);
+
+  // Build HTML for print
+  const dests=Object.keys(DEST_MAP);
+  let statsHTML=dests.map(key=>{
+    const col=getColor(key); const lbl=getLabel(key);
+    let n=0,kg=0,area=0;
+    for(const[id,pos]of Object.entries(placed)){
+      const c=CARGOS.find(x=>x.id===id);
+      if(c&&c.dest===key){n++;kg+=c.kg;const{l,w}=effDims(c,pos.rotated);area+=l*w;}
+    }
+    const totalForDest=CARGOS.filter(c=>c.dest===key).length;
+    return `<div class="scard" style="border-left-color:${col.hex};background:${col.hex}10">
+      <div class="scard-dest" style="color:${col.hex}">${lbl}</div>
+      <div class="scard-row"><span>Embarcados</span><span class="scard-val">${n}/${totalForDest}</span></div>
+      <div class="scard-row"><span>Peso</span><span class="scard-val">${(kg/1000).toFixed(2)} t</span></div>
+      <div class="scard-row"><span>\u00c1rea</span><span class="scard-val">${area.toFixed(1)} m\u00b2</span></div>
+    </div>`;
+  }).join('');
+
+  let totalKg=0,totalArea=0,totalN=0;
+  for(const[id,pos]of Object.entries(placed)){
+    const c=CARGOS.find(x=>x.id===id);if(!c) continue;
+    const{l,w}=effDims(c,pos.rotated);totalKg+=c.kg;totalArea+=l*w;totalN++;
+  }
+
+  const lim=CFG.pesoM2||5;
+
+  // Cargo table per destination
+  let tableHTML='';
+  const dests2=Object.keys(DEST_MAP);
+  dests2.forEach(key=>{
+    const items=Object.entries(placed)
+      .map(([id,pos])=>({c:CARGOS.find(x=>x.id===id),pos}))
+      .filter(x=>x.c&&x.c.dest===key);
+    if(items.length===0) return;
+    const col=getColor(key); const lbl=getLabel(key);
+    const um=getUM(key); const maxP=umMaxPeso(um);
+    tableHTML+=`<div class="table-dest-hdr">
+      <div class="table-dest-dot" style="background:${col.hex}"></div>
+      <span class="table-dest-lbl" style="color:${col.hex}">${lbl}</span>
+      <span class="table-dest-count">${items.length} itens</span>
+    </div>
+    <table><thead><tr>
+      <th>#</th><th>Descri\u00e7\u00e3o</th><th>Dimens\u00f5es (m)</th><th>Peso (kg)</th><th>t/m\u00b2</th><th>Baia</th>${maxP?'<th>\u26a0 Bola</th>':''}
+    </tr></thead><tbody>`;
+    items.forEach(({c,pos},i)=>{
+      const{l,w}=effDims(c,pos.rotated);
+      const bm2=CFG.L/CFG.N;
+      const rawBaia=Math.ceil((pos.x+l/2)/bm2);
+      const baia=CFG.baiaDir==='fwd'?(CFG.N+1-rawBaia):rawBaia;
+      const pm2=((c.kg/1000)/(l*w));
+      const overLimit=maxP&&c.kg/1000>maxP;
+      tableHTML+=`<tr${overLimit?' style="background:#fff0f0"':''}>
+        <td class="td-mono">${i+1}</td>
+        <td>${c.desc}</td>
+        <td class="td-mono">${l}\u00d7${w}${pos.rotated?'<span class="td-rot"> \u21bb</span>':''}</td>
+        <td class="td-mono">${Math.round(c.kg).toLocaleString('pt-BR')}</td>
+        <td class="td-mono" style="color:${pm2>lim?'#cc2222':''}">${pm2.toFixed(2)}</td>
+        <td class="td-mono">${baia}</td>
+        ${maxP?`<td style="color:${overLimit?'#cc2222':'#888'};font-weight:${overLimit?'900':'400'}">${overLimit?'\u26a0 '+((c.kg/1000).toFixed(2))+'t':'\u2714'}</td>`:''}
+      </tr>`;
+    });
+    tableHTML+='</tbody></table>';
+  });
+
+  // Pressão pontual máxima
+  let maxPm2=0, maxPm2desc='';
+  for(const[id,pos] of Object.entries(placed)){
+    const c=CARGOS.find(x=>x.id===id); if(!c) continue;
+    const{l,w}=effDims(c,pos.rotated);
+    const pm2=(c.kg/1000)/(l*w);
+    if(pm2>maxPm2){maxPm2=pm2;maxPm2desc=c.desc;}
+  }
+  const pm2Color=maxPm2>lim?'#cc2222':maxPm2>lim*0.9?'#c07000':'#1a3a6a';
+  const rota=Object.keys(DEST_MAP).map(k=>getLabel(k)).join(' \u2192 ');
+
+  const _html=`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>Plano de Carga \u2014 ${atend}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+      *{box-sizing:border-box;margin:0;padding:0;}
+      body{font-family:'Inter',sans-serif;background:#f4f7fb;color:#1a2a3a;font-size:11px;}
+
+      /* PAGE WRAPPER */
+      .page{background:#fff;max-width:1100px;margin:0 auto;padding:28px 32px 24px;}
+
+      /* HEADER */
+      .hdr{display:flex;justify-content:space-between;align-items:stretch;padding-bottom:14px;border-bottom:3px solid #1a3a6a;margin-bottom:18px;gap:20px;}
+      .hdr-left{display:flex;flex-direction:column;justify-content:center;}
+      .hdr-anchor{font-size:28px;line-height:1;}
+      .hdr-title{font-size:26px;font-weight:900;letter-spacing:4px;color:#1a3a6a;text-transform:uppercase;line-height:1;}
+      .hdr-sub{font-size:11px;color:#5a7090;letter-spacing:1.5px;margin-top:3px;}
+      .hdr-right{text-align:right;display:flex;flex-direction:column;justify-content:center;gap:2px;}
+      .hdr-right div{font-size:11px;color:#5a7090;}
+      .hdr-right b{color:#1a3a6a;font-weight:700;}
+
+      /* DECK */
+      .deck-wrap{margin-bottom:18px;}
+      .deck-side-label{font-size:9px;font-weight:900;letter-spacing:2px;color:#3a5a8a;text-transform:uppercase;text-align:center;padding:4px 0;}
+      .deck-row{display:flex;align-items:center;gap:8px;}
+      .deck-vert{font-size:9px;font-weight:700;color:#5a7090;writing-mode:vertical-rl;white-space:nowrap;letter-spacing:1px;}
+      .deck-vert.aft{transform:rotate(180deg);}
+      .deck-img{width:100%;border:1.5px solid #c0d0e0;border-radius:3px;display:block;}
+
+      /* STATS GRID */
+      .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:18px;}
+      .scard{border-radius:5px;padding:10px 14px;border-left:4px solid;}
+      .scard-dest{font-size:10px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;}
+      .scard-row{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;color:#333;}
+      .scard-val{font-weight:700;font-family:'Roboto Mono',monospace;font-size:12px;}
+      .scard-total{background:#eef3fb;border-left:4px solid #1a3a6a;}
+      .scard-total .scard-dest{color:#1a3a6a;}
+
+      /* TABLE */
+      .table-section{margin-bottom:16px;}
+      .table-dest-hdr{display:flex;align-items:center;gap:8px;margin:10px 0 4px;}
+      .table-dest-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0;}
+      .table-dest-lbl{font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase;}
+      .table-dest-count{font-size:10px;color:#8090a8;font-family:'Roboto Mono',monospace;}
+      table{width:100%;border-collapse:collapse;font-size:10px;}
+      thead tr{background:#1a3a6a;}
+      thead th{color:#fff;padding:5px 8px;text-align:left;font-weight:700;letter-spacing:.5px;font-size:9px;text-transform:uppercase;}
+      tbody td{padding:4px 8px;border-bottom:1px solid #e8eef5;color:#1a2a3a;}
+      tbody tr:nth-child(even) td{background:#f5f8fc;}
+      tbody tr:last-child td{border-bottom:none;}
+      .td-mono{font-family:'Roboto Mono',monospace;}
+      .td-rot{color:#888;font-size:9px;}
+
+      /* FOOTER */
+      .footer{margin-top:20px;padding-top:10px;border-top:1px solid #d0dcea;display:flex;justify-content:space-between;align-items:center;color:#8090a8;font-size:9px;}
+      .footer-sig{display:flex;gap:16px;}
+
+      /* PRINT BUTTON */
+      .print-btn{display:block;margin:20px auto 0;padding:10px 32px;background:#1a3a6a;color:#fff;border:none;border-radius:5px;font-size:13px;font-weight:900;letter-spacing:2px;cursor:pointer;font-family:'Inter',sans-serif;text-transform:uppercase;}
+      @media print{
+        body{background:#fff;}
+        .print-btn{display:none;}
+        .page{padding:12px 16px;}
+      }
+    </style>
+  
+<style>
+#legend{display:none !important;}
+</style>
+
+</head><body><div class="page">
+
+    <!-- HEADER -->
+    <div class="hdr">
+      <div class="hdr-left">
+        <div class="hdr-anchor">\u2693</div>
+        <div class="hdr-title">Plano de Carga</div>
+        <div class="hdr-sub">Conv\u00e9s Principal &mdash; ${CFG.L} m \u00d7 ${CFG.W} m &mdash; ${CFG.N} baias</div>
+      </div>
+      <div class="hdr-right">
+        <div><b>Embarca\u00e7\u00e3o:</b> ${navio}</div>
+        <div><b>Atendimento:</b> ${atend}</div>
+        <div><b>Data:</b> ${dateFmt}</div>
+        <div><b>Rota:</b> ${rota}</div>
+        <div><b>Cap. conv\u00e9s:</b> ${lim} t/m\u00b2 m\u00e1x.</div>
+      </div>
+    </div>
+
+    <!-- DECK IMAGE -->
+    <div class="deck-wrap">
+      <div class="deck-side-label">BOMBORDO (BB) \u2014 PORT SIDE</div>
+      <div class="deck-row">
+        <div class="deck-vert aft">\u2190 POPA \u2014 AFT</div>
+        <img class="deck-img" src="${deckImg}" alt="Conv\u00e9s">
+        <div class="deck-vert">PROA \u2014 FWD \u2192</div>
+      </div>
+      <div class="deck-side-label">BORESTE (BE) \u2014 STARBOARD SIDE</div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-grid">
+      ${statsHTML}
+      <div class="scard scard-total">
+        <div class="scard-dest">Total embarcado</div>
+        <div class="scard-row"><span>Itens</span><span class="scard-val">${totalN}</span></div>
+        <div class="scard-row"><span>Peso</span><span class="scard-val">${(totalKg/1000).toFixed(2)} t</span></div>
+        <div class="scard-row"><span>Ocupa\u00e7\u00e3o</span><span class="scard-val">${(totalArea/(CFG.L*CFG.W)*100).toFixed(1)}%</span></div>
+        <div class="scard-row"><span>P. m\u00e1x.</span><span class="scard-val" style="color:${pm2Color}">${maxPm2.toFixed(2)} t/m\u00b2</span></div>
+      </div>
+    </div>
+
+    <!-- CARGO TABLES -->
+    ${tableHTML}
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <span>Gerado em ${new Date().toLocaleString('pt-BR')}</span>
+      <div class="footer-sig">
+        <span>Comandante: ____________________________</span>
+      </div>
+    </div>
+
+  </div>
+  <button class="print-btn" onclick="window.print()">\uD83D\uDDB6 Imprimir / Salvar PDF</button>
+  </body></html>`;
+  const _blob=new Blob([_html],{type:'text/html'});
+  const _url=URL.createObjectURL(_blob);
+  const _a=document.createElement('a');
+  _a.href=_url; _a.target='_blank'; _a.rel='noopener';
+  document.body.appendChild(_a); _a.click();
+  setTimeout(()=>{URL.revokeObjectURL(_url);_a.remove();},3000);
+  closeExport();
+  } catch(err){
+    alert('Erro ao gerar PDF:\n'+err.message+'\n\n'+err.stack);
+  }
+}
+
+function drawGridOnCtx(ctx,dw,dh,sx,sy){
+  // Print-friendly: white bg, light grid, baia numbers, NO colored bars inside
+  const bm=CFG.L/CFG.N;
+  // Deck border
+  ctx.strokeStyle='#a0b8d0'; ctx.lineWidth=1;
+  ctx.strokeRect(0,0,dw,dh);
+  // Baia dividers
+  ctx.strokeStyle='#c8d8e8'; ctx.lineWidth=0.5;
+  for(let i=1;i<CFG.N;i++){const x=i*bm*sx;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,dh);ctx.stroke();}
+  // Midline
+  ctx.strokeStyle='#d8e8f0'; ctx.setLineDash([3,5]);
+  ctx.beginPath();ctx.moveTo(0,dh/2);ctx.lineTo(dw,dh/2);ctx.stroke(); ctx.setLineDash([]);
+  // Baia numbers
+  const fs=Math.max(9,Math.min(13,bm*sx*0.28))|0;
+  ctx.font=`700 ${fs}px sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle='rgba(30,70,130,.45)';
+  for(let i=0;i<CFG.N;i++){
+    const bNum=CFG.baiaDir==='fwd'?(CFG.N-i):(i+1);
+    ctx.fillText(bNum,(i+0.5)*bm*sx,dh/2);
+  }
+  ctx.textBaseline='alphabetic';
+}
+
+// ── PDF PARSING ───────────────────────────────────────────────────
+//
+// Supports all Petrobras manifest variants:
+//   - Base PBG  (Angra) → P-67, P-69, UMPA, etc.
+//   - Base PACU (Porto do Açu) → P-43, P-32, P-47, UMMA, etc.
+//   - Base PDOCAS → NS59, etc.
+//   - Any other base discovered in "BASE: XXXX" header
+//
+// Column layout (consistent across all variants, PDF coords):
+//   x ≈  28  → IT.AT / section origin code
+//   x ≈  56  → RT/EMB
+//   x ≈ 108  → ITEM/SUB
+//   x ≈ 198  → UND
+//   x ≈ 227  → DESCRIÇÃO (description, may be merged)
+//   x ≈ 311  → DESTINO (section dest code)
+//   x ≈ 411  → CxLxA (dimensions)
+//   x ≈ 507  → PESO(KG)
+//
+// Section header row: origin-base word at x<150, dest-code at x≈311, same top
+
+const _dimRE      = /^(\d+[,\.]\d+)[xX×](\d+[,\.]\d+)[xX×](\d+[,\.]\d+)$/i;
+const _SKIP_CARGO = /\bVZ\b|\bVAZIO\b|\bB\/V\b/i;
+// Words that are never platform codes
+const _SKIP_CODE  = /^(UN|BRL|VZ|BB|BE|SIM|NAO|DE|DA|DO|EM|COM|ITEM|SUB|MDA|PAG|RT|EMB|AT|UND|QTDE|PESO|VALOR|ORIGEM|DESTINO)$/;
+// Words that are base names (never a platform destination)
+const _BASE_NAMES = new Set(['PBG','PACU','PDOCAS','ANGRA','ITAGUAI','MAC','MACAE']);
+
+function _isBaseWord(w){ return _BASE_NAMES.has(w) || /^[A-Z]{2,6}$/.test(w) && w.length <= 6; }
+
+function _findPlatformCode(text){
+  const t = (text||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
+  if(!t) return null;
+  // 1) Exact known UM_DB keys (longest first)
+  const keys = Object.keys(UM_DB).sort((a,b)=>b.length-a.length);
+  for(const k of keys){ if(t === k || t.startsWith(k+' ') || t.includes(' '+k)) return k; }
+  // 2) Generic: hyphenated code (P-43, NS-59, etc.) or short alpha-num
+  const m = t.match(/^([A-Z]{1,5}-\d{2,3})\b/) || t.match(/^([A-Z]{2,6}\d{0,3})$/);
+  if(m && !_SKIP_CODE.test(m[1]) && !/^\d+$/.test(m[1])) return m[1];
+  return null;
+}
+
+function _toF(s){ return parseFloat((s||'').replace(',','.')); }
+function _parsePeso(s){
+  if(!s) return NaN;
+  if(s.includes(',')) return parseFloat(s.replace(/\.(?=\d{3})/g,'').replace(',','.'));
+  return parseFloat(s);
+}
+
+// Group pdfjs items into visual rows using proximity tolerance
+function _groupRows(items, yTol){
+  const rows = [];
+  for(const item of items){
+    if(!item.str || !item.str.trim()) continue;
+    const rawY = item.transform[5];
+    const found = rows.find(r => Math.abs(r.y - rawY) <= yTol);
+    if(found) found.items.push(item);
+    else rows.push({y: rawY, items:[item]});
+  }
+  rows.sort((a,b) => b.y - a.y); // top→bottom (PDF Y is bottom-up)
+  for(const r of rows) r.items.sort((a,b) => a.transform[4] - b.transform[4]);
+  return rows;
+}
+
+// Extract base name from page header "BASE: XXXX" token cluster
+function _extractBase(rows){
+  // The header row has "BASE:" around x≈637, followed by base name
+  for(const row of rows){
+    if(row.y < 550) continue; // header is near top of page (high Y in PDF coords)
+    const words = row.items.map(i=>i.str.trim()).filter(Boolean);
+    const bi = words.indexOf('BASE:');
+    if(bi >= 0 && bi+1 < words.length) return words[bi+1].toUpperCase();
+  }
+  return null;
+}
+
+// Detect dim column X from actual dimension tokens on this page
+function _detectDimX(rows){
+  const xs = [];
+  for(const row of rows)
+    for(const item of row.items)
+      if(_dimRE.test(item.str.trim())) xs.push(item.transform[4]);
+  if(!xs.length) return 411;
+  xs.sort((a,b)=>a-b);
+  return xs[Math.floor(xs.length/2)];
+}
+
+function _flushPending(pending, currentDest, cargos, idN){
+  if(!pending || !pending.desc || /^\d+$/.test(pending.desc) || _SKIP_CARGO.test(pending.desc)) return idN;
+  const dims = [pending.d0, pending.d1].sort((a,b)=>b-a);
+  cargos.push({
+    id:'c'+(idN++), dest:currentDest, destLabel:currentDest,
+    desc: pending.desc.substring(0,55),
+    l: parseFloat(Math.min(dims[0],CFG.L).toFixed(2)),
+    w: parseFloat(Math.min(dims[1],CFG.W).toFixed(2)),
+    kg: pending.peso
+  });
+  return idN;
+}
+
+async function parseManifestPDF(file){
+  setLog('Lendo PDF...');
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+  setLog(`PDF lido: ${pdf.numPages} págs. Parseando...`);
+
+  let cargos = [], idN = 1;
+  let currentDest = null, inReturn = false, pending = null;
+  let pageBase = null; // base name extracted from each page header
+
+  for(let p = 1; p <= pdf.numPages; p++){
+    const page    = await pdf.getPage(p);
+    const content = await page.getTextContent();
+
+    const rows = _groupRows(content.items, 3);
+
+    // Extract base name from this page's header (e.g. "PBG", "PACU", "PDOCAS")
+    const thisBase = _extractBase(rows);
+    if(thisBase) pageBase = thisBase;
+    const base = pageBase || 'PBG';
+
+    // Detect dim/peso column positions from actual data on this page
+    const dimX   = _detectDimX(rows);
+    const dimXlo = dimX - 18, dimXhi = dimX + 18;
+    const pesoXlo = dimX + 40, pesoXhi = dimX + 140;
+
+    for(const row of rows){
+      const y     = row.y;
+      const words = row.items.map(i=>({
+        text: i.str.trim(), x: i.transform[4], rawY: i.transform[5]
+      })).filter(w => w.text);
+
+      if(!words.length) continue;
+
+      // ── Detect section header ──
+      // Pattern: a "base" word near x≈28 on the left, a platform code near x≈311 on the right
+      // Both at the same Y (top≈171 in these PDFs)
+      const leftWord  = words.find(w => w.x < 150);
+      const rightWord = words.find(w => w.x >= 290 && w.x <= 340);
+
+      if(leftWord && rightWord){
+        const lText = leftWord.text.toUpperCase();
+        const rCode = _findPlatformCode(rightWord.text);
+
+        // Forward: base on left, platform on right
+        if((lText === base || lText.includes(base)) && rCode && rCode !== base){
+          idN = _flushPending(pending, currentDest, cargos, idN); pending = null;
+          currentDest = rCode; inReturn = false; continue;
+        }
+        // Return: platform on left, base on right
+        const lCode = _findPlatformCode(leftWord.text);
+        const rText = rightWord.text.toUpperCase();
+        if(lCode && lCode !== base && (rText === base || rText.includes(base))){
+          idN = _flushPending(pending, currentDest, cargos, idN); pending = null;
+          inReturn = true; currentDest = null; continue;
+        }
+      }
+
+      // Legacy PBG-style detection (two-column PDF layout with wider zones)
+      // This handles old manifests where base is x<260 and dest is x>=265
+      if(!leftWord || leftWord.x >= 150){
+        const origWords = words.filter(w => w.x < 260);
+        const destWords = words.filter(w => w.x >= 265);
+        const origText  = origWords.map(w=>w.text).join(' ');
+        const destText  = destWords.map(w=>w.text).join(' ');
+        const hasPBGinOrig = origWords.some(w=>w.text===base);
+        const hasPBGinDest = destWords.some(w=>w.text===base);
+        const destInDest   = _findPlatformCode(destText);
+        const destInOrig   = _findPlatformCode(origText);
+        if(hasPBGinOrig && destInDest && !hasPBGinDest){
+          idN = _flushPending(pending, currentDest, cargos, idN); pending = null;
+          currentDest = destInDest; inReturn = false; continue;
+        }
+        if(destInOrig && hasPBGinDest && !hasPBGinOrig){
+          idN = _flushPending(pending, currentDest, cargos, idN); pending = null;
+          inReturn = true; currentDest = null; continue;
+        }
+      }
+
+      if(!currentDest || inReturn) continue;
+
+      // ── Cargo row: has dimension token near dimX column ──
+      const dimWord = words.find(w => w.x > dimXlo && w.x < dimXhi && _dimRE.test(w.text));
+
+      if(dimWord){
+        idN = _flushPending(pending, currentDest, cargos, idN); pending = null;
+
+        const dm = dimWord.text.match(_dimRE);
+        const d0 = _toF(dm[1]), d1 = _toF(dm[2]);
+
+        // Peso: first numeric token to the right of dim column
+        const pesoWord = words.find(w => w.x > pesoXlo && w.x < pesoXhi && /^[\d.,]+$/.test(w.text));
+        if(!pesoWord) continue;
+        const peso = _parsePeso(pesoWord.text);
+        if(isNaN(peso) || peso < 10) continue;
+
+        // Description: tokens between x≈200 and dimX
+        let descWords = words.filter(w => w.x >= 195 && w.x < dimXlo);
+        const unIdx = descWords.findIndex(w => w.text === 'UN');
+        if(unIdx >= 0) descWords = descWords.slice(unIdx + 1);
+        descWords = descWords.filter(w => !/^\d{4}\/\d{4}$/.test(w.text));
+        const descHere = descWords.map(w=>w.text).join(' ').trim();
+
+        pending = {d0, d1, peso, y, desc: descHere};
+        continue;
+      }
+
+      // ── Continuation row: description line below pending ──
+      if(pending){
+        const gap = pending.y - y;
+        if(gap >= -1 && gap <= 22){
+          let descWords = words.filter(w => w.x >= 80 && w.x < pesoXlo);
+          const ecIdx = descWords.findIndex(w => w.text === 'EMBALAGEMCADASTRADA' || w.text.includes('EMBALAGEM'));
+          if(ecIdx >= 0) descWords = descWords.slice(ecIdx + 1);
+          const unIdx = descWords.findIndex(w => w.text === 'UN');
+          if(unIdx >= 0) descWords = descWords.slice(unIdx + 1);
+          descWords = descWords.filter(w =>
+            w.text !== 'BRL' &&
+            !/^\d{4}\/\d{4}$/.test(w.text) &&
+            !_SKIP_CODE.test(w.text) &&
+            !/^(Local|Nº|End\.)/.test(w.text)
+          );
+          const desc2 = descWords.map(w=>w.text).join(' ').trim();
+          const desc  = (desc2 && !/^\d+$/.test(desc2)) ? desc2 : pending.desc;
+          if(desc && !/^\d+$/.test(desc) && !_SKIP_CARGO.test(desc)){
+            const dims = [pending.d0, pending.d1].sort((a,b)=>b-a);
+            cargos.push({
+              id:'c'+(idN++), dest:currentDest, destLabel:currentDest,
+              desc: desc.substring(0,55),
+              l: parseFloat(Math.min(dims[0],CFG.L).toFixed(2)),
+              w: parseFloat(Math.min(dims[1],CFG.W).toFixed(2)),
+              kg: pending.peso
+            });
+          }
+          pending = null;
+        } else {
+          idN = _flushPending(pending, currentDest, cargos, idN); pending = null;
+        }
+      }
+    }
+
+    // Flush leftover at page end
+    idN = _flushPending(pending, currentDest, cargos, idN); pending = null;
+  }
+
+  const counts = cargos.reduce((a,c)=>{a[c.dest]=(a[c.dest]||0)+1;return a;},{});
+  const summary = Object.entries(counts).map(([k,v])=>`${k}:${v}`).join(' · ');
+  setLog(`✓ ${cargos.length} cargas · ${summary}`);
+  return cargos;
+}
+// ── CONTROLS ─────────────────────────────────────────────────────
+function setFil(f,btn){filterDest=f;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('active'));btn.classList.add('active');buildSidebar();}
+function toggleVis(){return;}
+function clearDeck(){placed={};buildSidebar();buildDeck();}
+function setLog(msg){document.getElementById('parseLog').textContent=msg;}
+
+// ── UPLOAD ────────────────────────────────────────────────────────
+function openUploadTracked(origem){
+  gtag('event', 'abrir_manifesto', {
+    'button_name': 'Upload Manifesto',
+    'origem': origem
+  });
+  openUpload();
+}
+
+function openUpload(){document.getElementById('uploadModal').classList.remove('hidden');}
+function closeUpload(){document.getElementById('uploadModal').classList.add('hidden');}
+function setMSt(msg,type){const el=document.getElementById('modalStatus');el.textContent=msg;el.className='modal-status '+(type||'');}
+
+document.getElementById('fileInput').addEventListener('change', async function(){
+  const file=this.files[0]; if(!file) return;
+  setMSt('⏳ Processando PDF...','loading');
+  try{
+    const cargos=await parseManifestPDF(file);
+    if(cargos.length===0){setMSt('⚠ Nenhuma carga encontrada.','err');return;}
+    CARGOS=cargos; placed={}; buildDestMap(cargos);
+    setMSt(`✓ ${cargos.length} cargas carregadas!`,'ok');
+    const labels=[...new Set(cargos.map(c=>getLabel(c.dest)))];
+    document.getElementById('routePill').innerHTML='PBG → <b>'+labels.join(' → ')+'</b> → PBG';
+    // Pre-fill export fields from PDF name if possible
+    const name=file.name;
+    const atm=name.match(/(\d{9})/); if(atm) document.getElementById('expAtend').value=atm[1];
+    const nm=name.match(/STARNAV[_\s](\w+)/i); if(nm) document.getElementById('expNavio').value='STARNAV '+nm[1];
+    setTimeout(()=>{closeUpload();buildDynamicUI();buildSidebar();buildDeck();},900);
+  }catch(err){setMSt('✗ Erro: '+err.message,'err');console.error(err);}
+});
+
+const mDrop=document.getElementById('modalDrop');
+mDrop.addEventListener('dragover',e=>{e.preventDefault();mDrop.classList.add('over');});
+mDrop.addEventListener('dragleave',()=>mDrop.classList.remove('over'));
+mDrop.addEventListener('drop',e=>{e.preventDefault();mDrop.classList.remove('over');const f=e.dataTransfer.files[0];if(f){const dt=new DataTransfer();dt.items.add(f);document.getElementById('fileInput').files=dt.files;document.getElementById('fileInput').dispatchEvent(new Event('change'));}});
+
+const hsPm2=document.getElementById('hsPesoM2');
+hsPm2.addEventListener('mouseenter',showPm2Tooltip);
+hsPm2.addEventListener('mousemove',posPm2Tooltip);
+hsPm2.addEventListener('mouseleave',hidePm2Tooltip);
+hsPm2.addEventListener('click',focusCargoFromPm2);
+
+// ── RESIZE & INIT ─────────────────────────────────────────────────
+let resizeT;
+window.addEventListener('resize',()=>{clearTimeout(resizeT);resizeT=setTimeout(()=>{deckScale=computeScale().sx;buildDeck();},80);});
+setupDeckDrop(); setupDrawMode(); buildSidebar();
+setTimeout(()=>{deckScale=computeScale().sx;buildDeck();},80);
+</script>
+</body>
+</html>
