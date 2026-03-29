@@ -16,7 +16,14 @@ function fetchJSON(url) {
       headers: {
         'Authorization': 'Bearer ' + TOKEN,
         'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0',
+        'Content-Type': 'application/json',
+        'Origin': 'https://petrobras.ttforecast.com.br',
+        'Referer': 'https://petrobras.ttforecast.com.br/bulletin/forecast-table/Mar%C3%ADtimo/Tupi',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0',
+        'Accept-Language': 'pt-BR,pt;q=0.9,en-GB;q=0.8,en;q=0.7,en-US;q=0.6',
+        'Sec-Fetch-Site': 'same-origin',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Dest': 'empty',
       },
       timeout: 30000,
     }, (res) => {
