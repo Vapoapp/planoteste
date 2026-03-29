@@ -5,7 +5,7 @@ const https = require('https');
 const fs    = require('fs');
 const path  = require('path');
 
-const TOKEN   = process.env.TTFORECAST_TOKEN;
+const TOKEN   = (process.env.TTFORECAST_TOKEN || '').replace(/[\r\n\s]+/g, '');
 const BASE    = 'https://petrobras.ttforecast.com.br/api/v1';
 
 if (!TOKEN) { console.error('TTFORECAST_TOKEN não definido'); process.exit(1); }
